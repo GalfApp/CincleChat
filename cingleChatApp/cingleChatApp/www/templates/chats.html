@@ -1,0 +1,56 @@
+<ion-view>
+    <ion-nav-title>
+        <i class="icon ion-chatbubbles" style="font-size: 28px;">
+        <span class="badge small badge-positive" ng-if="unreadChatsAmount">{{unreadChatsAmount}}</span>
+        </i>
+    </ion-nav-title>
+    <ion-nav-buttons side="right">
+        <button class="button button-clear button-icon button-positive icon ion-ios-search" ng-click="openNewChat()"></button>
+    </ion-nav-buttons>
+    <ion-content class="ion-content-custom">
+        <ion-list ng-if="chats">
+            <span ng-repeat="chat in chats">
+                <ion-item class="item-remove-animate item-avatar" nav-direction="forward" href="#/chats/{{chat.id}}"
+                          type="item-text-wrap">
+                    <img ng-src="{{chat.foto[0].foto}}">
+
+                    <span class="badge avatar-badge avatar-badge-s badge-positive" ng-if="chat.visto == '0'">
+                        <i class="icon ion-ios-bolt"></i>
+                    </span>
+            <h3>
+                        <small>{{chat.nombres[0].nombre + ' ' + chat.nombres[0].apellido}}</small>
+                    </h3>
+            <p>{{chat.mensaje}}</p>
+            <span class="item-note">{{chat.activeTime}}</span>
+            <ion-option-button class="button-calm" ng-click="clearChat(chat)">
+                Clear
+            </ion-option-button>
+            <ion-option-button class="button-assertive" ng-click="removeChat(chat)">
+                Delete
+            </ion-option-button>
+            </ion-item>
+            </span>
+        </ion-list>
+        <!--show when there is no activity-->
+        <div ng-if="!chats">
+            <div style="height: 60px"></div>
+            <div class="text-center" style="padding: 45px">
+                <h2 class="grey">
+                    Recent
+                </h2>
+                <div style="height: 10px"></div>
+                <h4 class="grey">Once you start chatting, all your messages will be here.</h4>
+                <div style="height: 20px"></div>
+                <button class="button button-outline" ng-click="openNewChat()">New Message</button>
+            </div>
+        </div>
+    </ion-content>
+    <div class="float-button">
+        <span class="height-fix">
+    <a class="content">
+      <button class="button button-icon button-positive icon ion-paper-airplane"
+                ng-click="newBroadcastChat()" style="left: -2px;"></button>
+    </a>
+    </span>
+    </div>
+</ion-view>

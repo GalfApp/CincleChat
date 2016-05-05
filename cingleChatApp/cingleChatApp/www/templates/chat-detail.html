@@ -1,0 +1,52 @@
+<ion-view>
+    <ion-nav-buttons side="primary">
+        <button nav-direction="back" class="button button-clear button-icon button-positive icon ion-ios-arrow-back"
+                ng-click="historyBack()">
+        </button>
+    </ion-nav-buttons>
+
+    <ion-nav-title>
+        <a>
+            {{chat.user.nombre + ' ' +  chat.user.apellido}}
+            <!-- <i class="icon ion-ios-arrow-forward"></i> -->
+        </a>
+    </ion-nav-title>
+
+    <ion-content class="padding ion-content-custom">
+        <div style="height: 10px"></div>
+        <div class="list border-none me" ng-repeat="chat in chatList"
+             ng-if="chatList.length">
+            <!-- Mensaje que envían los usuarios de Cingle -->
+            <div class="item item-avatar-s chat-friend no-background" ng-if="!(chat.userId==1 || chat.userId==2)">
+                <img ng-src="{{chat.photo}}">
+                <p class="chat-text stable-bg"> {{chat.chatText}}</p>
+            </div>
+            <!-- Mensaje que envía "Nicole" o "David" -->
+            <div class="item item-avatar-right-s chat-me text-right no-background" ng-if="(chat.userId==1 || chat.userId==2)">
+                <img ng-src="{{chat.photo}}">
+                <p class="chat-text positive-bg text-left"> {{chat.chatText}}</p>
+            </div>
+        </div>
+
+        <div class="empty-des text-center padding" ng-if="chatList.length == 0">
+            <h6 class="stable" ng-if="room.userList.length > 2">
+                <i class="icon ion-ios-compose-outline" style="margin-right: 5px"></i>
+                You created the group {{room.title}}
+            </h6>
+
+            <div style="height: 100px"></div>
+            <div ng-if="room.userList.length == 2">
+                <h3 class="stable">Start a conversation</h3>
+                <h4 class="stable">{{room.title}} is on Messenger and will get your messages instantly.</h4>
+            </div>
+        </div>
+    </ion-content>
+
+    <ion-footer-bar class="bar-stable chat-bar">
+        <form class="row" name="theform">
+            <input class="col col-75" type="text" ng-model="chatText" placeholder="Type a message" ng-minlength="1" ng-required="true">
+            <button class="col button positive-style" ng-click="sendChat(chatText); chatText = null" ng-disabled="theform.$invalid">Send</button>
+        </form>
+    </ion-footer-bar>
+
+</ion-view>
