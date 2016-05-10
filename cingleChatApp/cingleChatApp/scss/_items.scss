@@ -112,7 +112,7 @@
 .item-complex.activated .item-content,
 .item .item-content.active,
 .item .item-content.activated {
-  @include item-active-style($item-default-active-bg, $item-default-active-border);
+  @include item-active-style(none, $item-default-active-border);
 
   // Different active themes for <a> and <button> items
   &.item-light {
@@ -478,13 +478,17 @@ button.item.item-button-right {
 .item-avatar .item-content,
 .item-avatar-left,
 .item-avatar-left .item-content {
-  padding-left: $item-avatar-width + ($item-padding * 2);
+  padding-left: $item-avatar-width + ($item-padding * 3);
   min-height: $item-avatar-width + ($item-padding * 2);
+  /*margin-top: $item-padding;
+  margin-bottom: $item-padding;*/
+  padding-top: $item-padding * 1.5;
+  padding-bottom: $item-padding - 4;
 
   > img:first-child,
   .item-image {
     position: absolute;
-    top: $item-padding;
+    top: $item-padding * 1.5 + 2;
     left: $item-padding;
     max-width: $item-avatar-width;
     max-height: $item-avatar-height;
@@ -498,7 +502,8 @@ button.item.item-button-right {
 .item-avatar-s .item-content,
 .item-avatar-left-s,
 .item-avatar-left-s .item-content {
-  padding-left: $item-avatar-width-s + ($item-padding * 2);
+  /*padding-left: $item-avatar-width-s + ($item-padding * 2);*/
+  padding-left: 8px;
   min-height: $item-avatar-width-s + ($item-padding * 2);
 
   > img:first-child,
@@ -554,7 +559,8 @@ button.item.item-button-right {
 
 .item-avatar-right-s,
 .item-avatar-right-s .item-content {
-  padding-right: $item-avatar-width-s + ($item-padding * 2);
+  /*padding-right: $item-avatar-width-s + ($item-padding * 2);*/
+  padding-right: 8px;
   min-height: $item-avatar-width-s + ($item-padding * 2);
 
   > img:first-child,

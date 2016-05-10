@@ -3,7 +3,8 @@
   display: inline-block;
 
   padding: 10px;
-  border-radius: 20px;
+  border-radius: 5px;
+  width: 80%;
   max-width: 200px;
 }
 
@@ -13,24 +14,24 @@
 
 .chat-friend .chat-text:before {
   position: absolute;
-  left: 50px;
+  left: 0px;
 
   content: '';
   width: 0;
   height: 0;
-  border-width: 7px 14px 7px 0;
+  border-width: 7px 8px 7px 0;
   border-style: solid;
-  border-color: transparent $stable transparent;
+  border-color: transparent rgba(255, 255, 255, 0.09) transparent;
 }
 
 .chat-me .chat-text:before {
   position: absolute;
-  right: 50px;
+  right: 0px;
 
   content: '';
   width: 0;
   height: 0;
-  border-width: 7px 0 7px 14px;
+  border-width: 7px 0 6px 8px;
   border-style: solid;
   border-color: transparent $positive transparent;
 }

@@ -6,13 +6,17 @@ $ionicons-font-path: "../fonts" !default;
 $light: rgba(255, 255, 255, 0.05) !default;
 $stable: #002135 !default; // azul oscuro, azul cingle: #09283A
 $positive: #FD5E67 !default; // rosado
-$calm: #6FC1E6 !default;
-$balanced: #1F95D7 !default;
+$calm: #1F95D7 !default;
+$balanced: #1f95ff !default;
 $energized: #F7CA00 !default;
 $assertive: #FF3E3E !default;
 $royal: #6200BF !default;
 $dark: $positive !default;
 $gray-custom: #ccc;
+$male: #1F95D7;
+$female: #DD6BEA;
+$item-default-bg: none;
+$white-color: #fff;
 // Base
 // -------------------------------
 $font-family-sans-serif: Lato,
@@ -84,8 +88,8 @@ $item-thumbnail-width-s: 72px !default;
 $item-thumbnail-height-s: 72px !default;
 $item-thumbnail-width-xs: 52px !default;
 $item-thumbnail-height-xs: 52px !default;
-$item-avatar-width: 45px !default;
-$item-avatar-height: 45px !default;
+$item-avatar-width: 67px !default;
+$item-avatar-height: 67px !default;
 $item-avatar-width-s: 30px !default;
 $item-avatar-height-s: 30px !default;
 $item-avatar-width-xs: 22px !default;
@@ -543,10 +547,8 @@ input[type="color"] {
 }
 
 .ion-content-custom {
-    // background-color: rgba(9, 40, 58, 0.9);
-    background: url(../img/main_bg.jpg);
+    background: url(../img/main_bg.png);
     background-size: 100% auto !important;
-    //font-family: 'latolight';
 }
 
 .title,
@@ -563,20 +565,19 @@ input[type="color"] {
     color: white !important;
     border-radius: 50%;
     /*border-radius:15% 0 0 0;*/
-    width: 30px;
-    padding: 30px;
-    
+    width: 35px;
+    padding: 35px;
     position: fixed;
     z-index: 1000;
     left: 0;
     right: 0;
     bottom: 3%;
-    margin: auto;/* Center it */
+    margin: auto;
+    /* Center it */
 }
 
 .float-button .height_fix {
     margin-top: 100%;
-    border: 1px solid red;
 }
 
 .float-button .content {
@@ -591,17 +592,16 @@ input[type="color"] {
 }
 
 .badge-female {
-    color: $energized; 
+    color: $energized;
     background-color: transparent;
     border: none;
 }
 
 .badge-male {
-    color: $balanced; 
+    color: $balanced;
     background-color: transparent;
     border: none;
 }
-
 
 input {
     /*background: white !important;*/
@@ -609,19 +609,21 @@ input {
 }
 
 input::-webkit-input-placeholder {
-   color: $positive;
+    color: $positive;
 }
 
-input:-moz-placeholder { /* Firefox 18- */
-   color: $positive;  
+input:-moz-placeholder {
+    /* Firefox 18- */
+    color: $positive;
 }
 
-input::-moz-placeholder {  /* Firefox 19+ */
-   color: $positive;  
+input::-moz-placeholder {
+    /* Firefox 19+ */
+    color: $positive;
 }
 
-input:-ms-input-placeholder {  
-   color: $positive;  
+input:-ms-input-placeholder {
+    color: $positive;
 }
 
 .no-background {
@@ -630,4 +632,175 @@ input:-ms-input-placeholder {
 
 .positive-style {
     color: $positive !important;
+}
+
+.cool-textarea {
+    padding: 4px 8px 3px 4px !important;
+    color: white;
+}
+
+.circle-button {
+    height: 60px;
+    width: 60px;
+    /*position: absolute;*/
+    margin: 0 auto;
+    border-radius: 50%;
+    z-index: 10;
+    padding: 0;
+    border: none;
+    background-color: #d8d8d8;
+    color: #9b9b9b;
+}
+
+.female {
+    background-color: $female;
+    color: white;
+}
+
+.inactive {
+    background-color: #d8d8d8 !important;
+    color: #9b9b9b !important;
+}
+
+.male {
+    background-color: $male;
+    color: white;
+}
+
+.both-genders {
+    background-color: $energized;
+    color: black;
+}
+
+.center-col {
+    text-align: center;
+}
+
+.animate-switch-container {
+    position: relative;
+    background: white;
+    border: 1px solid black;
+    height: 40px;
+    overflow: hidden;
+}
+
+.animate-switch {
+    /*padding:10px;*/
+}
+
+.animate-switch.ng-animate {
+    transition: all cubic-bezier(0.250, 0.460, 0.450, 0.940) 0.5s;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
+
+.animate-switch.ng-leave.ng-leave-active,
+.animate-switch.ng-enter {
+    top: -500px;
+}
+
+.animate-switch.ng-leave,
+.animate-switch.ng-enter.ng-enter-active {
+    top: 0;
+}
+
+/*.transparent-item {
+    background: none !important;
+
+}
+*/
+.no-viewed {
+    margin: 10px 4px; 
+    border-radius: 5px;
+    background: rgba(255, 255, 255, 0.1);
+}
+    
+.item-separator {
+    width: 93%;
+    display: block;
+    margin: auto;
+}
+
+.divider-custom {
+    background-color: $stable;
+    width: 93%;
+    margin: auto;
+}
+
+
+.badge {
+    border-radius: 50%;
+    width: 25px;
+    height: 25px;
+    padding: 5px;
+
+    /*font: 32px Arial, sans-serif;*/
+}
+
+.badge-head {
+    top: 4px;
+    margin-left: -7px;
+    position: absolute;
+}
+
+.button-search {
+    width: 40px;
+    height: 40px;
+}
+
+.search-icon {
+    width: 24px;
+    height: 24px;
+    top: 4px;
+    right: 4px;
+    position: relative;
+}
+
+.bubles-icon {
+    position: relative;
+    top: 10px;
+    width: 27px;
+    height: 24px;
+}
+
+.plane-icon {
+    position: relative;
+    top: 5px;
+    width: 95%;
+    height: auto;
+    z-index: 100000
+}
+
+.text-pulling {
+    color: $white-color;
+}
+
+.icon-pulling {
+    color: $white-color;
+}
+
+.spinner {
+    color: $white-color
+}
+
+.white-text {
+    color: $white-color !important;
+}
+
+.chat-image {
+    position: relative;
+    top: 8px;
+    max-width: 30px;
+    max-height: 30px;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    margin-right: 10px;
+}
+
+.chat-text-transparent {
+    background: rgba(255, 255, 255, 0.09)
 }

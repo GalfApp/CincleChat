@@ -1,0 +1,60 @@
+<ion-modal-view id="new-group" class="modal-page" ng-controller="BroadcastController">
+    <ion-header-bar class="bar-stable">
+        <button class="button button-clear button-positive" ng-click="closeNewBroadcastMessage()">Cancel</button>
+        <h1 class="title">BROADCAST MESSAGE</h1>
+    </ion-header-bar>
+    <ion-header-bar class="bar bar-subheader" style="background: #09283A">
+        <div class="title" style="padding: 5px 0px;">
+            <div class="button-bar bar-light">
+                <a class="button button-outline button-positive active" ng-class="{active: broadcastTo == 'gender'}" ng-click="setBroadcastTo('gender')">By gender</a>
+                <a class="button button-outline button-positive" ng-class="{active: broadcastTo == 'email_list'}" ng-click="setBroadcastTo('email_list')">By email list</a>
+            </div>
+        </div>
+    </ion-header-bar>
+    <ion-content class="padding ion-content-custom">
+        <div ng-switch on="broadcastTo" style="height: 120px; margin-top: -15px;">
+            <div class="list animate-switch" ng-switch-when="gender">
+                <label class="item item-input item-stacked-label">
+                    <span class="input-label">Select gender</span>
+                </label>
+                <div class="row">
+                    <div class="col center-col">
+                        <button class="button circle-button male inactive" ng-class="{inactive: genderTo!='m'}" ng-click="setGender('m')">
+                            <i class="icon ion-male"></i>
+                        </button>
+                    </div>
+                    <div class="col center-col">
+                        <button class="button circle-button female inactive" ng-class="{inactive: genderTo!='f'}" ng-click="setGender('f')">
+                            <i class="icon ion-female"></i>
+                        </button>
+                    </div>
+                    <div class="col center-col">
+                        <button class="button circle-button both-genders inactive" ng-class="{inactive: genderTo!='mf'}" ng-click="setGender('mf')">
+                            <i class="icon ion-male" style="left: 5px; top: -7px;  position: relative;"></i>
+                            <i class="icon ion-female" style="right: 13px; bottom: -5px; position: relative;"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="list animate-switch" ng-switch-when="email_list">
+                <label class="item item-input item-stacked-label">
+                    <span class="input-label">Email list</span>
+                    <textarea class="cool-textarea" placeholder="Enter the emails of the recipients (comma separated)" rows="4"></textarea>
+                </label>
+            </div>
+        </div>
+        <div class="list">
+            <label class="item item-input item-stacked-label">
+                <span class="input-label">Español</span>
+                <textarea class="cool-textarea" placeholder="Spanish message..." rows="4"></textarea>
+            </label>
+            <label class="item item-input item-stacked-label">
+                <span class="input-label">English</span>
+                <textarea class="cool-textarea" placeholder="Engish message..." rows="4"></textarea>
+            </label>
+        </div>
+        <div class="padding">
+            <button class="button button-positive button-block">Send</button>
+        </div>
+    </ion-content>
+</ion-modal-view>
