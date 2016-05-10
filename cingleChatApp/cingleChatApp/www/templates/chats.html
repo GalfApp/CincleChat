@@ -4,87 +4,16 @@
         <span class="badge small badge-positive badge-head" ng-if="unreadChatsAmount">{{unreadChatsAmount}}</span>
     </ion-nav-title>
     <ion-nav-buttons side="right">
-        <button class="button button-clear button-icon button-positive button-search" ng-click="openNewChat()">
+        <button class="button button-clear button-icon button-positive button-search" ng-click="openSearchUser()">
             <img src="img/search.png" class="search-icon">
         </button>
     </ion-nav-buttons>
     <ion-content class="ion-content-custom">
 
-        <ion-refresher
-            pulling-text="Pull to refresh..."
-            on-refresh="initChatController(true)">
-        </ion-refresher>
+        <div data-ng-include="'templates/chat-list.html'"></div>
 
-        <ion-list ng-if="chats.length">
-            <span ng-repeat="chat in chats">
-                <ion-item class="item-remove-animate item-avatar" 
-                        ng-if="!(isCingleAgent(chat.user_p) && isCingleAgent(chat.user_s))"
-                        ng-class="{'no-viewed': chat.visto == '0'}" 
-                        nav-direction="forward" 
-                        href="#/chats/{{getCingleUserId(chat.user_p, chat.user_s)}}"
-                        type="item-text-wrap">
-                    <img ng-src="{{chat.foto[0].foto}}">
+        <div data-ng-include="'templates/users-list.html'"></div>
 
-                    <!-- <span class="badge avatar-badge avatar-badge-s badge-positive" ng-if="chat.visto == '0'">
-                        <i class="icon ion-ios-bolt"></i>
-                    </span> -->
-                    <h3>
-                        <small>{{chat.nombres[0].nombre + ' ' + chat.nombres[0].apellido}}</small>
-                    </h3>
-                    <p>{{chat.mensaje || '-'}}</p>
-                    <p>{{utilities.getPassedTime(chat.created_at)}}</p>
-                    <ion-option-button class="button-calm" ng-click="clearChat(chat)">
-                        Clear
-                    </ion-option-button>
-                    <ion-option-button class="button-assertive" ng-click="removeChat(chat)">
-                        Delete
-                    </ion-option-button>
-                </ion-item>
-                <div>
-                    <img src="img/item-separator.png" class="item-separator">
-                </div>
-            </span>
-        </ion-list>
-        <ion-list ng-if="users.length">
-            <ion-item class="item item-divider-positive divider-custom">
-                <p>Users ({{usersData.total}})</p>
-            </ion-item>
-            <div>
-                <img src="img/item-separator.png" class="item-separator">
-            </div>
-            <span ng-repeat="user in users">
-                <ion-item class="item-remove-animate item-avatar transparent-item" nav-direction="forward" href="#/chats/{{user.id}}"
-                          type="item-text-wrap">
-                    <img ng-src="http://graph.facebook.com/{{user.idfacebook}}/picture?type=square">
-
-                    <!-- <span class="badge avatar-badge avatar-badge-s badge-positive" ng-if="user.visto == '0'">
-                        <i class="icon ion-ios-bolt"></i>
-                    </span> -->
-                    <h3>
-                        <small>{{ user.nombre + ' ' + user.apellido}}</small>
-                    </h3>
-                    <!-- <p>{{user.mensaje}}</p> -->
-                    <!-- <span class="item-note">{{user.activeTime}}</span> -->
-                    <span class="badge avatar-badge avatar-badge" 
-                            ng-class="{'badge-female':user.sexo=='F', 'badge-male':user.sexo=='M'}"
-                            ng-if="user.sexo == 'M' || user.sexo == 'F'">
-                        <i class="icon ion-male" ng-if="user.sexo == 'M'"></i>
-                        <i class="icon ion-female" ng-if="user.sexo == 'F'"></i>
-                    </span>
-                </ion-item>
-                <div>
-                    <img src="img/item-separator.png" class="item-separator">
-                </div>
-            </span>
-        </ion-list>
-        <ion-infinite-scroll
-            ng-if="moreUsersCanBeLoaded()"
-            icon="ion-loading-c"
-            spinner="ios"
-            on-infinite="loadMoreUsers()"
-            immediate-check="false"
-            distance="1%">
-        </ion-infinite-scroll>
         <!--show when there is no activity-->
         <div ng-if="!chats">
             <div style="height: 60px"></div>
@@ -95,7 +24,7 @@
                 <div style="height: 10px"></div>
                 <h4 class="grey">Once you start chatting, all your messages will be here.</h4>
                 <div style="height: 20px"></div>
-                <button class="button button-outline" ng-click="openNewChat()">New Message</button>
+                <button class="button button-outline" ng-click="openSearchUser()">New Message</button>
             </div>
         </div>
     </ion-content>
@@ -103,7 +32,7 @@
         <span class="height-fix">
             <a class="content">
                 <button class="button button-icon button-positive"
-                        ng-click="openNewBroadcastMessage()" style="left: -2px;">
+                        ng-click="goToBroadcast()" style="left: -2px;">
                     <img src="img/plane.png" class="plane-icon">
                 </button>
             </a>

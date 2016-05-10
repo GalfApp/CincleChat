@@ -1,5 +1,5 @@
 // controlador para los chats
-MainController.controller('ChatController', function($scope, $stateParams, $q, CONSTANTS, $interval) {
+MainController.controller('ChatController', function($scope, $stateParams, $q, CONSTANTS, $interval, $ionicListDelegate) {
     console.log('ChatController!');
     // chat con un usuario
     $scope.chat = []
@@ -52,7 +52,7 @@ MainController.controller('ChatController', function($scope, $stateParams, $q, C
                     // se inicia la tarea que concurrentemente esta consultando en el server por nuevos mensajes
                     startChatInterval()
                 } else {
-                    alert('Error')
+                    console.log('Error')
                 }
             }, function(error) {
                 console.log('Error getting user chat history. Error: ');
@@ -125,7 +125,7 @@ MainController.controller('ChatController', function($scope, $stateParams, $q, C
                             markMessagesAsRead(false)
                         }
                     } else {
-                        alert('Error')
+                        console.log('Error')
                     }
                 }, function(error) {
                     console.log('Error trying to mark a message as read. Error: ');
@@ -159,7 +159,7 @@ MainController.controller('ChatController', function($scope, $stateParams, $q, C
                         markMessagesAsRead(false)
                     }
                 } else {
-                    alert('Error')
+                    console.log('Error')
                 }
             }, function(error) {
                 console.log('Error getting chat. Error: ');
@@ -254,7 +254,7 @@ MainController.controller('ChatController', function($scope, $stateParams, $q, C
                 // se intenta crear siempre el chat
                 createChat($stateParams.userId)
             }, function(reason) {
-                alert('Error to get the user')
+                console.log('Error to get the user')
                 $scope.historyBack()
             });
         }
@@ -282,7 +282,7 @@ MainController.controller('ChatController', function($scope, $stateParams, $q, C
                         // se obtiene el chat actualizado
                         getChat($stateParams.userId)
                     } else {
-                        alert('Error')
+                        console.log('Error')
                     }
 
                     // La acción ha terminado
@@ -300,15 +300,61 @@ MainController.controller('ChatController', function($scope, $stateParams, $q, C
         }
     }
 
-
-    // function responsable de eliminar un chat
-    $scope.removeChat = function(chat) {
-
+    /**
+    *   function responsable de eliminar un chat
+    */
+    $scope.removeChat = function(chat, index) {
+        // se valida que existan los ids para eliminar el chat
+        if (chat.user_p && chat.user_s) {
+            // Se elimina el chat
+            $scope.restangular.one('delete_chat', chat.user_p).all(chat.user_s)
+                .post('', {})
+                .then(function(response) {
+                    // se valida el código de respuesta
+                    if (response.status === 200) {
+                        console.log('Chat Eliminado...');
+                        // se elimina de memoria el index
+                        $scope.chats.splice(index, 1)
+                        // se actualiza el listado de chats
+                        $scope.getUnreadChatsAmount(CONSTANTS.USERS.NICOLE.CODE, false)
+                    } else {
+                        console.log('Error')
+                    }
+                }, function(error) {
+                    console.log('Error deleting. Error: ');
+                    console.log(error);
+                })
+        }
     };
 
-    // function responsable de limpiar un chat
-    $scope.clearChat = function(chat) {
+    /**
+    *   function responsable de limpiar un chat
+    */
+    $scope.clearChat = function(chat, index) {
+        // se valida que existan los ids para eliminar el chat
+        if (chat.user_p && chat.user_s) {
+            // Se elimina el chat
+            $scope.restangular.one('clear_chat', chat.user_p).all(chat.user_s)
+                .post('', {})
+                .then(function(response) {
+                    // se valida el código de respuesta
+                    if (response.status === 200) {
+                        console.log('Chat clean...');
+                        // Se limpia el ultimo mensaje
+                        $scope.chats[index].mensaje = ''
+                        // se actualiza el listado de chats
+                        $scope.getUnreadChatsAmount(CONSTANTS.USERS.NICOLE.CODE, false)
 
+                        // se ocultan los botones que parecen cuando se hizo swipe
+                        $ionicListDelegate.closeOptionButtons()
+                    } else {
+                        console.log('Error')
+                    }
+                }, function(error) {
+                    console.log('Error deleting. Error: ');
+                    console.log(error);
+                })
+        }
     };
 
     // function responsable de abrir la UI para enviar broadcast

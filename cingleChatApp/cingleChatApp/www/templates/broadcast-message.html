@@ -1,0 +1,82 @@
+<ion-view>
+    <ion-nav-buttons side="primary">
+        <button nav-direction="back" class="button button-clear button-icon button-positive icon ion-ios-arrow-back white-text"
+                ng-click="historyBack()">
+        </button>
+    </ion-nav-buttons>
+
+    <ion-nav-title>
+        <h1 class="title">BROADCAST MESSAGE</h1>
+    </ion-nav-title>
+
+    <ion-header-bar class="bar bar-subheader" style="background: #09283A">
+        <div class="title" style="padding: 5px 0px;">
+            <div class="button-bar bar-light ">
+                <a class="button button-outline button-positive border-radius-custom" 
+                        ng-class="{active: formData.broadcastTo == 'gender'}" 
+                        ng-click="setBroadcastTo('gender')">
+                    By gender
+                </a>
+                <a class="button button-outline button-positive border-radius-custom-b" 
+                        ng-class="{active: formData.broadcastTo == 'email_list'}" 
+                        ng-click="setBroadcastTo('email_list')">
+                    By email list
+                </a>
+            </div>
+        </div>
+    </ion-header-bar>
+
+    <ion-content class="padding ion-content-custom">
+        <div ng-switch on="formData.broadcastTo" style="height: 120px;">
+            <div class="list animate-switch" ng-switch-when="gender">
+                <label class="item item-input item-stacked-label">
+                    <span class="input-label">Select gender</span>
+                </label>
+                <div class="row">
+                    <div class="col center-col">
+                        <button class="button-sex" ng-click="setGender('m')">
+                            <img src="img/male_on.png" ng-if="formData.genderTo=='m'">
+                            <img src="img/male_off.png" ng-if="formData.genderTo!='m'">
+                        </button>
+                    </div>
+                    <div class="col center-col">
+                        <button class="button-sex" ng-click="setGender('f')">
+                            <img src="img/female_on.png" ng-if="formData.genderTo=='f'">
+                            <img src="img/female_off.png" ng-if="formData.genderTo!='f'">
+                        </button>
+                    </div>
+                    <div class="col center-col">
+                        <button class="button-sex" ng-click="setGender('mf')">
+                            <img src="img/male_female_on.png" ng-if="formData.genderTo=='mf'">
+                            <img src="img/male_female_off.png" ng-if="formData.genderTo!='mf'">
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="list animate-switch" ng-switch-when="email_list">
+                <label class="item item-input item-stacked-label">
+                    <span class="input-label">Email list</span>
+                    <textarea class="cool-textarea" ng-model="formData.emailList" placeholder="Enter the emails of the recipients (comma separated)" rows="5"></textarea>
+                </label>
+            </div>
+        </div>
+        <div class="list" style="margin-top: 10px;">
+            <label class="item item-input item-stacked-label">
+                <span class="input-label">Español</span>
+                <textarea class="cool-textarea" ng-model="formData.spanishMessage" placeholder="Spanish message..." rows="4"></textarea>
+            </label>
+            <label class="item item-input item-stacked-label">
+                <span class="input-label">English</span>
+                <textarea class="cool-textarea" ng-model="formData.englishMessage" placeholder="Engish message..." rows="4"></textarea>
+            </label>
+        </div>
+        <div class="padding">
+            <button class="button button-positive button-block buton-send-custom"
+                    ng-disabled="sendBroadcastButton.loading || (formData.broadcastTo == 'email_list' && _.isEmpty(formData.emailList)) || (_.isEmpty(formData.spanishMessage) && _.isEmpty(formData.englishMessage))"
+                    ng-click="sendBroadcast()">
+                {{sendBroadcastButton.currentText}}
+            </button>
+        </div>
+    </ion-content>
+
+</ion-view>

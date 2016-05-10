@@ -10020,6 +10020,28 @@ input:-ms-input-placeholder {
   padding: 4px 8px 3px 4px !important;
   color: white; }
 
+.button-sex {
+  background: transparent;
+  border: none;
+  width: 74px;
+  padding: 0px; }
+
+.button-sex img {
+  width: 100%;
+  height: auto;
+  vertical-align: middle; }
+
+.buton-send-custom {
+  border-radius: 4px;
+  width: 40% !important;
+  margin: 0 auto; }
+
+.border-radius-custom {
+  border-radius: 4px 0 0 4px !important; }
+
+.border-radius-custom-b {
+  border-radius: 0 4px 4px 0 !important; }
+
 .circle-button {
   height: 60px;
   width: 60px;

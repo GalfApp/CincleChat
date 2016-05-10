@@ -1,0 +1,46 @@
+<div>
+    <ion-item class="item item-divider-positive divider-custom">
+        <p ng-if="usersData.total >= 0">Users ({{usersData.total}})</p>
+        <p ng-if="!(usersData.total >= 0)">Not users found</p>
+    </ion-item>
+    <div>
+        <img src="img/item-separator.png" class="item-separator">
+    </div>
+</div>
+<ion-list ng-if="users.length">
+    <div>
+        <img src="img/item-separator.png" class="item-separator">
+    </div>
+    <span ng-repeat="user in users">
+        <ion-item class="item-remove-animate item-avatar transparent-item" nav-direction="forward" href="#/chats/{{user.id}}"
+                  type="item-text-wrap">
+            <img ng-src="http://graph.facebook.com/{{user.idfacebook}}/picture?type=square">
+
+            <!-- <span class="badge avatar-badge avatar-badge-s badge-positive" ng-if="user.visto == '0'">
+                <i class="icon ion-ios-bolt"></i>
+            </span> -->
+            <h3>
+                <small>{{user.nombre + ' ' + user.apellido}}</small>
+            </h3>
+            <!-- <p>{{user.mensaje}}</p> -->
+            <!-- <span class="item-note">{{user.activeTime}}</span> -->
+            <span class="badge avatar-badge avatar-badge" 
+                    ng-class="{'badge-female':user.sexo=='F', 'badge-male':user.sexo=='M'}"
+                    ng-if="user.sexo == 'M' || user.sexo == 'F'">
+                <i class="icon ion-male" ng-if="user.sexo == 'M'"></i>
+                <i class="icon ion-female" ng-if="user.sexo == 'F'"></i>
+            </span>
+        </ion-item>
+        <div>
+            <img src="img/item-separator.png" class="item-separator">
+        </div>
+    </span>
+</ion-list>
+<ion-infinite-scroll
+    ng-if="moreUsersCanBeLoaded()"
+    icon="ion-loading-c"
+    spinner="ios"
+    on-infinite="loadMoreUsers()"
+    immediate-check="false"
+    distance="1%">
+</ion-infinite-scroll>

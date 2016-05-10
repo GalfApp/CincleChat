@@ -2,18 +2,26 @@
 var MainController = angular.module('MainController', []);
 
 // controlador principal de la app
-MainController.controller('MainController', function($rootScope, $scope, $ionicModal, $ionicScrollDelegate, ChatService, Restangular, CONSTANTS, $interval) {
+MainController.controller('MainController', function($rootScope, $scope, $ionicModal, $ionicScrollDelegate, ChatService, Restangular, CONSTANTS, $interval, $state) {
     // se configura restangular de forma global
     $scope.restangular = Restangular;
 
     // Función global para realizar un back en cualquier pantalla
     $scope.historyBack = function() {
         window.history.back()
+        $scope.scrollTop()
     }
-        // función global para realizar scroll en cualquier pantalla
+    
+    // función global para realizar scroll bottom en cualquier pantalla
     $scope.scrollBottom = function() {
         console.log('scrollBottom...');
         $ionicScrollDelegate.scrollBottom();
+    }
+
+    // función global para realizar scroll top en cualquier pantalla
+    $scope.scrollTop = function() {
+        console.log('scrollTop...');
+        $ionicScrollDelegate.scrollTop();
     }
 
     /**
@@ -42,17 +50,22 @@ MainController.controller('MainController', function($rootScope, $scope, $ionicM
 
     // Lista de usuarios de la app
     $scope.users = []
+    
     // información de los usuarios de cingle
     $scope.usersData = {
         total: 0,
         lastPage: 0,
-        currentPage: -1 // se hace para que la primera vez que se soliciten datos se puedan traer
+        currentPage: -1, // se hace para que la primera vez que se soliciten datos se puedan traer
+        // variable que indica el ultimo texo por el cual busco un usuario, se oloca cualquier cosa 
+        // como valor con tal de que no coincida inicialmente con la var 'termino'
+        terminoPrev: '----cingle----'
     }
     // Parámetros para obtener los usuarios de cingle
     $scope.userDataParams = {
         page: 1,
         item_order: 'users.nombre',
-        asc_desc: 'asc'
+        asc_desc: 'asc',
+        termino: '' // texto para filtrar usuarios
     }
     // listado de chats activo del usuario
     $scope.chats = []
@@ -61,7 +74,8 @@ MainController.controller('MainController', function($rootScope, $scope, $ionicM
     // cantidad actual de mensajes sin leer, se usa para comparar con los datos obtenidos del server y saber si se necesita actualizar el listado de chats
     $scope.unreadChatsAmountCurrent = 0
 
-    var chatsInverval;
+    var chatsInverval
+    var chatsInvervalIndex = 0
 
     /**
      *   Función responsable de iniciar un interval que consulta frecuentemente por nuevos chats
@@ -74,6 +88,22 @@ MainController.controller('MainController', function($rootScope, $scope, $ionicM
             console.log('chatsInterval...');
             // se consulta por nuevos mensajes
             $scope.getUnreadChatsAmount(CONSTANTS.USERS.NICOLE.CODE)
+            // se lleva un registro de cuantas veces ha corrido el interval
+            chatsInvervalIndex++
+            // cada cierto tiempo se consulta por nuevos usuarios
+            console.log('chatsInvervalIndex: ', chatsInvervalIndex);
+            // cada minuto se actualizan los usuarios (siempre y cuando no se esta buscando uno)
+            if ((chatsInvervalIndex % 12 == 0) && !$scope.isSearching) {
+                console.log('update users from interval...');
+                $scope.usersData = {
+                    total: 0,
+                    lastPage: 0,
+                    currentPage: -1 // se hace para que la primera vez que se soliciten datos se puedan traer
+                }
+
+                // se traen los usuarios
+                $scope.loadMoreUsers()
+            }
         }, 5000);
     }
 
@@ -101,17 +131,51 @@ MainController.controller('MainController', function($rootScope, $scope, $ionicM
         $scope.getUnreadChatsAmount(CONSTANTS.USERS.NICOLE.CODE, isRefresh)
     }
 
+    $scope.nada = function () {
+        console.log('NADA!!');
+        console.log($scope.userDataParams);
+    }
+
     /**
      *   Función responsable de obtener el listado de usuarios
      */
     $scope.getUsers = function() {
         console.log('getUsers...');
         console.log($scope.userDataParams);
+
+        var isNewSearch = false
+        // validamos si esta buscando un usuario y ha cambiado el termino de búsqueda
+        if ($scope.isSearching && ($scope.userDataParams.termino != $scope.userDataParams.terminoPrev)) {
+            // es una nueva busqueda
+            isNewSearch = true
+            // se coloca el scroll al top
+            $scope.scrollTop()
+
+            // se indica buscar por la primera pagina
+            $scope.userDataParams.page = 1,
+            $scope.userDataParams.item_order = 'users.nombre',
+            $scope.userDataParams.asc_desc = 'asc'
+
+            $scope.usersData = {
+                total: 0,
+                lastPage: 0,
+                currentPage: -1 // se hace para que la primera vez que se soliciten datos se puedan traer
+            }
+        }
+
         // se realiza la petición http par aobtener los usuarios
         $scope.restangular.all('user').customGET('', $scope.userDataParams)
             .then(function(response) {
                 // se valida el código de respuesta
                 if (response.status === 200) {
+                    // se almacena el último termino por el cual se buscó
+                    $scope.userDataParams.terminoPrev = $scope.userDataParams.termino
+
+                    // si es la primera página, se resetean los users
+                    if ($scope.usersData.currentPage === -1 || isNewSearch) {
+                        $scope.users = []
+                    }
+
                     // se mantiene en memoria la información de los usuarios
                     $scope.usersData = {
                         total: response.data.total,
@@ -183,9 +247,9 @@ MainController.controller('MainController', function($rootScope, $scope, $ionicM
                     } else if (userId == CONSTANTS.USERS.DAVID.CODE) {
                         // se acaban de consultar el listado de chats de David
                         var chatsDavid = response.data
-                            // entonces se combina con el de Nicole que ya estaba y se ordenda
+                        // entonces se combina con el de Nicole que ya estaba y se ordenda
                         $scope.chats = $scope._.sortBy($scope._.union($scope.chats, chatsDavid), 'created_at').reverse()
-                            // se valida si es un refresh, de serlo así se emite un broadcast para informar que el evento termina
+                        // se valida si es un refresh, de serlo así se emite un broadcast para informar que el evento termina
                         if (isRefresh) {
                             console.log('OK REFRESH');
                             $scope.$broadcast('scroll.refreshComplete');
@@ -221,7 +285,7 @@ MainController.controller('MainController', function($rootScope, $scope, $ionicM
                         // se asigna en memoria el listado de chats actual
                         $scope.unreadChatsAmount = response.data.sin_leer
                         // se piden los chats de David
-                        $scope.getUnreadChatsAmount(CONSTANTS.USERS.DAVID.CODE)
+                        $scope.getUnreadChatsAmount(CONSTANTS.USERS.DAVID.CODE, isRefresh)
                     } else if (userId == CONSTANTS.USERS.DAVID.CODE) {
                         // se acaban de consultar el listado de chats de David
                         var unreadChatsDavidAmount = response.data.sin_leer
@@ -233,6 +297,14 @@ MainController.controller('MainController', function($rootScope, $scope, $ionicM
                         if ($scope.unreadChatsAmountCurrent != $scope.unreadChatsAmount) {
                             // se obtiene el listado de chats activos del usuario "Nicole" y recursivamente el de "David"
                             $scope.getUsersChatHistory(CONSTANTS.USERS.NICOLE.CODE, isRefresh)
+                        } else {
+                            // se valida si es un refresh, de serlo así se emite un broadcast para informar que el evento termina
+                            if (isRefresh) {
+                                console.log('OK REFRESH');
+                                $scope.$broadcast('scroll.refreshComplete');
+                            } else {
+                                console.log('NO REFRESH');
+                            }
                         }
                     }
                 } else {
@@ -244,6 +316,9 @@ MainController.controller('MainController', function($rootScope, $scope, $ionicM
             })
     }
 
+    // variable que indica si se tiene o no abierto el modal de busqueda
+    $scope.isSearching = false;
+
     // search modal
     $ionicModal.fromTemplateUrl('templates/modal/search.html', {
         scope: $scope,
@@ -251,34 +326,30 @@ MainController.controller('MainController', function($rootScope, $scope, $ionicM
     }).then(function(modal) {
         $scope.searchModal = modal;
     });
-    $scope.openNewChat = function() {
+    $scope.openSearchUser = function() {
+        // variable que indica el ultimo texo por el cual busco un usuario, se oloca cualquier cosa 
+        // como valor con tal de que no coincida inicialmente con la var 'termino'
+        $scope.userDataParams.terminoPrev = '----cingle----'
+        $scope.isSearching = true;
         $scope.searchModal.show();
     };
-    $scope.closeNewChat = function() {
+    $scope.closeSearchUser = function() {
+        // se limpia la busqueda
+        $scope.userDataParams.termino = ''
+        $scope.isSearching = false;
         $scope.searchModal.hide();
     };
 
-    // broadcastMessage modal
-    $ionicModal.fromTemplateUrl('templates/modal/broadcast-message.html', {
-        scope: $scope,
-        animation: 'slide-in-up'
-    }).then(function(modal) {
-        $scope.broadcastMessageModal = modal;
-    });
-    $scope.openNewBroadcastMessage = function() {
-        $scope.broadcastMessageModal.show();
-    };
-    $scope.closeNewBroadcastMessage = function() {
-        $scope.broadcastMessageModal.hide();
+    // envia al usuario a la pantalla de broadcast
+    $scope.goToBroadcast = function() {
+        $state.go('broadcast')
     };
 
     $scope.$on('$stateChangeStart', function() {
         if ($scope.searchModal) {
-            $scope.closeNewChat();
+            $scope.closeSearchUser();
         }
-        if ($scope.broadcastMessageModal) {
-            $scope.closeNewChat();
-        }
+        
     });
 
     $scope.$on('$destroy', function() {

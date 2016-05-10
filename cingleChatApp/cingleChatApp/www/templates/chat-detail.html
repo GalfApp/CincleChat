@@ -1,12 +1,13 @@
 <ion-view ng-init="initChat()">
     <ion-nav-buttons side="primary">
-        <button nav-direction="back" class="button button-clear button-icon button-positive icon ion-ios-arrow-back"
+        <button nav-direction="back" class="button button-clear button-icon button-positive icon ion-ios-arrow-back white-text"
                 ng-click="historyBack()">
         </button>
     </ion-nav-buttons>
 
     <ion-nav-title>
-        <img src="http://graph.facebook.com/{{userToChat.idfacebook}}/picture?type=square" class="chat-image">
+        <img ng-src="{{userToChat.fotos[0].foto}}" class="chat-image">
+
         <spam>
             {{userToChat.nombre + ' ' +  userToChat.apellido}}
         </spam>

@@ -83,16 +83,24 @@ angular.module('starter', ['ionic', 'restangular', 'underscore', 'MainController
     $stateProvider
 
         .state('chats', {
-        url: '/chats',
-        templateUrl: 'templates/chats.html',
-        controller: 'ChatController'
-    })
+            url: '/chats',
+            templateUrl: 'templates/chats.html',
+            controller: 'ChatController'
+        })
 
-    .state('chats-detail', {
-        url: '/chats/:userId',
-        templateUrl: 'templates/chat-detail.html',
-        controller: 'ChatController'
-    })
+        .state('chats-detail', {
+            url: '/chats/:userId',
+            templateUrl: 'templates/chat-detail.html',
+            controller: 'ChatController'
+        })
+
+        .state('broadcast', {
+            url: '/broadcast',
+            templateUrl: 'templates/broadcast-message.html',
+            controller: 'BroadcastController'
+        })
+
+
 
     // setup an abstract state for the tabs directive
     .state('tab', {

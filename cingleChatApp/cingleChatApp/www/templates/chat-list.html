@@ -1,0 +1,35 @@
+<ion-refresher
+    pulling-text="Pull to refresh chats..."
+    on-refresh="initChatController(true)">
+</ion-refresher>
+
+<ion-list ng-if="chats.length">
+    <span ng-repeat="chat in chats">
+        <ion-item class="item-remove-animate item-avatar" 
+                ng-if="!(isCingleAgent(chat.user_p) && isCingleAgent(chat.user_s))"
+                ng-class="{'no-viewed': chat.visto == '0'}" 
+                nav-direction="forward" 
+                href="#/chats/{{getCingleUserId(chat.user_p, chat.user_s)}}"
+                type="item-text-wrap">
+            <img ng-src="{{chat.foto[0].foto}}">
+
+            <!-- <span class="badge avatar-badge avatar-badge-s badge-positive" ng-if="chat.visto == '0'">
+                <i class="icon ion-ios-bolt"></i>
+            </span> -->
+            <h3>
+                <small>{{chat.nombres[0].nombre + ' ' + chat.nombres[0].apellido}}</small>
+            </h3>
+            <p>{{chat.mensaje || '-'}}</p>
+            <p>{{utilities.getPassedTime(chat.created_at)}}</p>
+            <ion-option-button class="button-calm" ng-click="clearChat(chat, $index)">
+                Clear
+            </ion-option-button>
+            <ion-option-button class="button-assertive" ng-click="removeChat(chat, $index)">
+                Delete
+            </ion-option-button>
+        </ion-item>
+        <div ng-if="!(isCingleAgent(chat.user_p) && isCingleAgent(chat.user_s))">
+            <img src="img/item-separator.png" class="item-separator">
+        </div>
+    </span>
+</ion-list>
