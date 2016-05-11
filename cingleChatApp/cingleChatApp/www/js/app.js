@@ -24,6 +24,7 @@ angular.module('starter', ['ionic', 'restangular', 'underscore', 'MainController
         if (window.StatusBar) {
             // org.apache.cordova.statusbar required
             StatusBar.styleLightContent();
+            StatusBar.hide();
         }
     });
 

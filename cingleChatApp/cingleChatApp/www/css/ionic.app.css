@@ -1,4 +1,6 @@
 @charset "UTF-8";
+@import url(http://fonts.googleapis.com/css?family=Lato);
+/*$bar-height: 60px;*/
 /*!
   Ionicons, v2.0.1
   Created by Ben Sperry for the Ionic Framework, http://ionicons.com/
@@ -9766,7 +9768,7 @@ input[type="color"] {
   border-bottom: 1px solid #eeeeee; }
 
 .main-text p {
-  font-family: Georgia, Cambria, "Times New Roman", Times, serif;
+  font-family: Lato;
   font-size: 18px;
   line-height: 1.555;
   color: #FD5E67; }
@@ -9780,7 +9782,7 @@ input[type="color"] {
   border: none; }
 
 .main-text blockquote:before {
-  font-family: Georgia, Cambria, "Times New Roman", Times, serif;
+  font-family: Lato;
   color: #FD5E67;
   content: open-quote;
   font-size: 4em;
@@ -10179,3 +10181,46 @@ input:-ms-input-placeholder {
 
 .chat-text-transparent {
   background: rgba(255, 255, 255, 0.09); }
+
+.bar {
+  background-size: 0%; }
+
+h1 {
+  font-family: Lato;
+  font-size: 24px;
+  font-style: normal;
+  font-variant: normal;
+  font-weight: 500;
+  line-height: 26.4px; }
+
+h3 {
+  font-family: Lato;
+  font-size: 14px;
+  font-style: normal;
+  font-variant: normal;
+  font-weight: 500;
+  line-height: 15.4px; }
+
+p {
+  font-family: Lato;
+  font-size: 14px;
+  font-style: normal;
+  font-variant: normal;
+  font-weight: 400;
+  line-height: 20px; }
+
+blockquote {
+  font-family: Lato;
+  font-size: 21px;
+  font-style: normal;
+  font-variant: normal;
+  font-weight: 400;
+  line-height: 30px; }
+
+pre {
+  font-family: Lato;
+  font-size: 13px;
+  font-style: normal;
+  font-variant: normal;
+  font-weight: 400;
+  line-height: 18.5714px; }

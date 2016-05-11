@@ -2,14 +2,28 @@
 var MainController = angular.module('MainController', []);
 
 // controlador principal de la app
-MainController.controller('MainController', function($rootScope, $scope, $ionicModal, $ionicScrollDelegate, ChatService, Restangular, CONSTANTS, $interval, $state) {
+MainController.controller('MainController', function($rootScope, $scope, $ionicModal, $ionicScrollDelegate, ChatService, Restangular, CONSTANTS, $interval, $state, $timeout) {
     // se configura restangular de forma global
     $scope.restangular = Restangular;
 
     // Función global para realizar un back en cualquier pantalla
     $scope.historyBack = function() {
         window.history.back()
-        $scope.scrollTop()
+        $timeout(function() {
+            $scope.scrollTop()
+        }, 100)
+
+        // el back siempre va a el listado, entonces se resetea el listado de usuarios
+        $scope.usersData = {
+            total: 0,
+            lastPage: 0,
+            currentPage: -1, // se hace para que la primera vez que se soliciten datos se puedan traer
+            // variable que indica el ultimo texo por el cual busco un usuario, se oloca cualquier cosa 
+            // como valor con tal de que no coincida inicialmente con la var 'termino'
+            terminoPrev: '----cingle----'
+        }
+        // se obtienen los usuarios
+        $scope.getUsers()
     }
     
     // función global para realizar scroll bottom en cualquier pantalla
@@ -88,6 +102,8 @@ MainController.controller('MainController', function($rootScope, $scope, $ionicM
             console.log('chatsInterval...');
             // se consulta por nuevos mensajes
             $scope.getUnreadChatsAmount(CONSTANTS.USERS.NICOLE.CODE)
+            // se actualizan los chats
+            $scope.getUsersChatHistory(CONSTANTS.USERS.NICOLE.CODE, false)
             // se lleva un registro de cuantas veces ha corrido el interval
             chatsInvervalIndex++
             // cada cierto tiempo se consulta por nuevos usuarios
@@ -129,6 +145,8 @@ MainController.controller('MainController', function($rootScope, $scope, $ionicM
         console.log('isRefresh: ', isRefresh);
         // se obtiene la cantidad de chats activos sin leer de "Nicole" y recursivamente de "David"
         $scope.getUnreadChatsAmount(CONSTANTS.USERS.NICOLE.CODE, isRefresh)
+        // se actualiza el chat
+        $scope.getUsersChatHistory(CONSTANTS.USERS.NICOLE.CODE, isRefresh)
     }
 
     $scope.nada = function () {
@@ -190,11 +208,11 @@ MainController.controller('MainController', function($rootScope, $scope, $ionicM
                     // se informa al infinite-scroll que la información ha cargado
                     $scope.$broadcast('scroll.infiniteScrollComplete');
                 } else {
-                    alert('Error')
+                    console.log('Error')
                 }
             }, function(error) {
                 console.log('Error getting users. Error: %s', error);
-                alert('Error')
+                console.log('Error')
             })
     }
 
@@ -258,11 +276,11 @@ MainController.controller('MainController', function($rootScope, $scope, $ionicM
                         }
                     }
                 } else {
-                    alert('Error')
+                    console.log('Error')
                 }
             }, function(error) {
                 console.log('Error getting user chat history. Error: %s', error);
-                alert('Error')
+                console.log('Error')
             })
     }
 
@@ -291,7 +309,7 @@ MainController.controller('MainController', function($rootScope, $scope, $ionicM
                         var unreadChatsDavidAmount = response.data.sin_leer
                         // entonces se combina con el de Nicole que ya estaba
                         $scope.unreadChatsAmount += unreadChatsDavidAmount
-
+                        console.log('sin leer (server): ', $scope.unreadChatsAmount + ' ' + $scope.unreadChatsAmountCurrent);
                         // se verifica si los mensajes actuales sin leer son menores a los recien consultados en el server,
                         // de ser asi entonce se actualiza el listado de chats
                         if ($scope.unreadChatsAmountCurrent != $scope.unreadChatsAmount) {
@@ -308,11 +326,11 @@ MainController.controller('MainController', function($rootScope, $scope, $ionicM
                         }
                     }
                 } else {
-                    alert('Error')
+                    console.log('Error')
                 }
             }, function(error) {
                 console.log('Error getting user chat history. Error: %s', error);
-                alert('Error')
+                console.log('Error')
             })
     }
 
