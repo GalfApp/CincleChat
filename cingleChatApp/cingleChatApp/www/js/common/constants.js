@@ -61,6 +61,18 @@ var CONSTANTS = {
         }
     },
 
+    LOADING: {
+        OPTIONS: {
+            content: '<i class="icon ion-loading-d"></i>',
+            animation: 'fade-in',
+            showBackdrop: true,
+            hideOnStateChange: true,
+            maxWidth: 200,
+            showDelay: 5,
+            duration: 12000 // maximo cantidad de segundos mostrando el loading
+        }
+    }
+
 }
 
 // constantes de la aplicación

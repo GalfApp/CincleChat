@@ -1,5 +1,5 @@
 // controlador para los chats
-MainController.controller('ChatController', function($scope, $stateParams, $q, CONSTANTS, $interval, $ionicListDelegate) {
+MainController.controller('ChatController', function($scope, $stateParams, $q, CONSTANTS, $interval, $ionicListDelegate, $ionicLoading) {
     console.log('ChatController!');
     // chat con un usuario
     $scope.chat = []
@@ -16,6 +16,8 @@ MainController.controller('ChatController', function($scope, $stateParams, $q, C
     }
     // listado de ids de mensajes sin leer
     $scope.unreadMessageList = []
+    // indica cada cuantos segundos se consulta por nuevos mensajes
+    $scope.intervalSecondsChat = 10
 
     /**
      *   Función responsable de dados dos ids de usuario, obtener el del usuario de cingle 
@@ -54,7 +56,12 @@ MainController.controller('ChatController', function($scope, $stateParams, $q, C
                 } else {
                     console.log('Error')
                 }
+                
+                // loading hide...
+                $ionicLoading.hide()
             }, function(error) {
+                // loading hide...
+                $ionicLoading.hide()
                 console.log('Error getting user chat history. Error: ');
                 console.log(error);
             })
@@ -218,7 +225,7 @@ MainController.controller('ChatController', function($scope, $stateParams, $q, C
         chatInverval = $interval(function() {
             console.log('interval...');
             getChat($stateParams.userId)
-        }, 5000);
+        }, $scope.intervalSecondsChat * 1000);
     }
 
     /**
@@ -239,6 +246,9 @@ MainController.controller('ChatController', function($scope, $stateParams, $q, C
         console.log('init chat')
         console.log('Params:');
         console.log($stateParams)
+
+        // loading...
+        $ionicLoading.show(CONSTANTS.LOADING.OPTIONS)
 
         // se valida si se debe crear una nueva conversación o si es una ya 
         if ($stateParams.userId) {

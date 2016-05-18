@@ -1,23 +1,23 @@
 <ion-view ng-init="initChat()">
-    <ion-nav-buttons side="primary">
+    <ion-nav-buttons side="left">
         <button nav-direction="back" class="button button-clear button-icon button-positive icon ion-ios-arrow-back white-text"
                 ng-click="historyBack()">
         </button>
     </ion-nav-buttons>
-
-    <ion-nav-title>
-        <img ng-src="{{userToChat.fotos[0].foto}}" class="chat-image">
-
-        <spam>
-            {{userToChat.nombre + ' ' +  userToChat.apellido}}
-        </spam>
+    <!-- <ion-nav-buttons side="right">
         <span class="badge avatar-badge avatar-badge" 
                 ng-class="{'badge-female':userToChat.sexo=='F', 'badge-male':userToChat.sexo=='M'}"
                 ng-if="userToChat.sexo == 'M' || userToChat.sexo == 'F'">
             <i class="icon ion-male" ng-if="userToChat.sexo == 'M'"></i>
             <i class="icon ion-female" ng-if="userToChat.sexo == 'F'"></i>
         </span>
+    </ion-nav-buttons> -->
 
+    <ion-nav-title>
+        <img ng-src="{{userToChat.fotos[0].foto}}" class="chat-image">
+        <spam class="upercase">
+            {{userToChat.nombre + ' ' +  userToChat.apellido}}
+        </spam>
     </ion-nav-title>
 
     <ion-content class="padding ion-content-custom">
@@ -47,9 +47,15 @@
         </div>
     </ion-content>
 
-    <ion-footer-bar class="bar-stable chat-bar">
+    <ion-footer-bar class="bar-stable chat-bar" keyboard-attach>
         <form class="row" name="theform">
-            <input class="col col-75" type="text" ng-model="chatText" placeholder="Type a message" ng-minlength="1" ng-required="true">
+            <input class="col col-75" 
+                    type="text" 
+                    ng-model="chatText" 
+                    placeholder="Type a message" 
+                    ng-minlength="1" 
+                    ng-required="true"
+                    ng-focus="scrollBottom()">
             <button class="col button positive-style" 
                     ng-click="sendMessage(chatText); chatText = null" 
                     ng-disabled="theform.$invalid || sendButton.loading">

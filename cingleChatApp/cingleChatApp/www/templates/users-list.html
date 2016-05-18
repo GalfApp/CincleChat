@@ -1,7 +1,6 @@
 <div>
     <ion-item class="item item-divider-positive divider-custom">
-        <p ng-if="usersData.total >= 0">Users ({{usersData.total}})</p>
-        <p ng-if="!(usersData.total >= 0)">Not users found</p>
+        <p>Users ({{usersData.total}})</p>
     </ion-item>
 </div>
 <ion-list ng-if="users.length">
@@ -21,12 +20,12 @@
             </h3>
             <!-- <p>{{user.mensaje}}</p> -->
             <!-- <span class="item-note">{{user.activeTime}}</span> -->
-            <span class="badge avatar-badge avatar-badge" 
+            <!-- <span class="badge avatar-badge avatar-badge" 
                     ng-class="{'badge-female':user.sexo=='F', 'badge-male':user.sexo=='M'}"
                     ng-if="user.sexo == 'M' || user.sexo == 'F'">
                 <i class="icon ion-male" ng-if="user.sexo == 'M'"></i>
                 <i class="icon ion-female" ng-if="user.sexo == 'F'"></i>
-            </span>
+            </span> -->
         </ion-item>
         <div>
             <img src="img/item-separator.png" class="item-separator">

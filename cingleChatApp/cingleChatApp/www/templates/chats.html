@@ -1,7 +1,7 @@
-<ion-view ng-init="initChatController(false)">
+<ion-view ng-init="initChatController()">
     <ion-nav-title>
         <img src="img/bubbles.png" class="bubles-icon">
-        <span class="badge small badge-positive badge-head" ng-if="unreadChatsAmount">{{unreadChatsAmount}}</span>
+        <span class="badge small badge-positive badge-head" ng-class="{'badge-large': unreadChatsAmount > 99 }" ng-if="unreadChatsAmount">{{unreadChatsAmount}}</span>
     </ion-nav-title>
     <ion-nav-buttons side="right">
         <button class="button button-clear button-icon button-positive button-search" ng-click="openSearchUser()">
@@ -12,7 +12,7 @@
 
         <div data-ng-include="'templates/chat-list.html'"></div>
 
-        <div data-ng-include="'templates/users-list.html'"></div>
+        <!-- <div data-ng-include="'templates/users-list.html'"></div> -->
 
         <!--show when there is no activity-->
         <div ng-if="!chats">

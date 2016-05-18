@@ -1,6 +1,6 @@
 <ion-refresher
     pulling-text="Pull to refresh chats..."
-    on-refresh="initChatController(true)">
+    on-refresh="checkNewChats(true)">
 </ion-refresher>
 
 <ion-list ng-if="chats.length">
@@ -11,13 +11,13 @@
                 nav-direction="forward" 
                 href="#/chats/{{getCingleUserId(chat.user_p, chat.user_s)}}"
                 type="item-text-wrap">
-            <img ng-src="{{chat.foto[0].foto}}">
+            <img ng-src="{{chat.foto}}">
 
             <!-- <span class="badge avatar-badge avatar-badge-s badge-positive" ng-if="chat.visto == '0'">
                 <i class="icon ion-ios-bolt"></i>
             </span> -->
             <h3>
-                <small>{{chat.nombres[0].nombre + ' ' + chat.nombres[0].apellido}}</small>
+                <small>{{ chat.nombre + ' ' + chat.apellido}}</small>
             </h3>
             <p>{{chat.mensaje || '-'}}</p>
             <p>{{utilities.getPassedTime(chat.created_at)}}</p>
@@ -33,3 +33,11 @@
         </div>
     </span>
 </ion-list>
+<ion-infinite-scroll
+    ng-if="moreChatsCanBeLoaded()"
+    icon="ion-loading-c"
+    spinner="ios"
+    on-infinite="loadMoreChats()"
+    immediate-check="false"
+    distance="1%">
+</ion-infinite-scroll>

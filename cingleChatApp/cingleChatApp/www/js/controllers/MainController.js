@@ -2,28 +2,22 @@
 var MainController = angular.module('MainController', []);
 
 // controlador principal de la app
-MainController.controller('MainController', function($rootScope, $scope, $ionicModal, $ionicScrollDelegate, ChatService, Restangular, CONSTANTS, $interval, $state, $timeout) {
+MainController.controller('MainController', function($rootScope, $scope, $ionicModal, $ionicScrollDelegate, ChatService, Restangular, CONSTANTS, $interval, $state, $timeout, $cordovaVibration, $ionicLoading) {
     // se configura restangular de forma global
-    $scope.restangular = Restangular;
+    $scope.restangular = Restangular
+
+    // $timeout(function () {
+    //     console.log('setTimeout...')
+    //     $interval(function () {
+    //         console.log('register......................................................');
+    //         // se inicializa el plugin de notificaciones
+    //         $scope.push.register()
+    //     }, 10000)
+    // }, 20000)
 
     // Función global para realizar un back en cualquier pantalla
     $scope.historyBack = function() {
         window.history.back()
-        $timeout(function() {
-            $scope.scrollTop()
-        }, 100)
-
-        // el back siempre va a el listado, entonces se resetea el listado de usuarios
-        $scope.usersData = {
-            total: 0,
-            lastPage: 0,
-            currentPage: -1, // se hace para que la primera vez que se soliciten datos se puedan traer
-            // variable que indica el ultimo texo por el cual busco un usuario, se oloca cualquier cosa 
-            // como valor con tal de que no coincida inicialmente con la var 'termino'
-            terminoPrev: '----cingle----'
-        }
-        // se obtienen los usuarios
-        $scope.getUsers()
     }
     
     // función global para realizar scroll bottom en cualquier pantalla
@@ -61,10 +55,10 @@ MainController.controller('MainController', function($rootScope, $scope, $ionicM
 
         return pathImage
     }
-
+    // indica cada cuanto se consulta por nuevos mensajes
+    $scope.intervalSeconds = 10
     // Lista de usuarios de la app
     $scope.users = []
-    
     // información de los usuarios de cingle
     $scope.usersData = {
         total: 0,
@@ -81,13 +75,25 @@ MainController.controller('MainController', function($rootScope, $scope, $ionicM
         asc_desc: 'asc',
         termino: '' // texto para filtrar usuarios
     }
+    // variable que indica si se debe notificar al usuario o no
+    $scope.shouldNotify = false
     // listado de chats activo del usuario
     $scope.chats = []
     // cantidad de mensajes sin leer
     $scope.unreadChatsAmount = 0
-    // cantidad actual de mensajes sin leer, se usa para comparar con los datos obtenidos del server y saber si se necesita actualizar el listado de chats
-    $scope.unreadChatsAmountCurrent = 0
-
+    // variable que guarda la última página obtenida de chats activos
+    $scope.chatsParams = {
+        page: 1
+    }
+    // primera página de chats activos
+    $scope.chatsFirstPage = []
+    // información de la paginacion de los chats
+    $scope.chatsPagination = {
+        total: 0,
+        current_page: -1,
+        last_page: 0
+    }
+    
     var chatsInverval
     var chatsInvervalIndex = 0
 
@@ -100,27 +106,11 @@ MainController.controller('MainController', function($rootScope, $scope, $ionicM
 
         chatsInverval = $interval(function() {
             console.log('chatsInterval...');
-            // se consulta por nuevos mensajes
-            $scope.getUnreadChatsAmount(CONSTANTS.USERS.NICOLE.CODE)
-            // se actualizan los chats
-            $scope.getUsersChatHistory(CONSTANTS.USERS.NICOLE.CODE, false)
+            // se verifica si hay nuevos mensajes sin leer
+            $scope.checkNewChats(false)
             // se lleva un registro de cuantas veces ha corrido el interval
             chatsInvervalIndex++
-            // cada cierto tiempo se consulta por nuevos usuarios
-            console.log('chatsInvervalIndex: ', chatsInvervalIndex);
-            // cada minuto se actualizan los usuarios (siempre y cuando no se esta buscando uno)
-            if ((chatsInvervalIndex % 12 == 0) && !$scope.isSearching) {
-                console.log('update users from interval...');
-                $scope.usersData = {
-                    total: 0,
-                    lastPage: 0,
-                    currentPage: -1 // se hace para que la primera vez que se soliciten datos se puedan traer
-                }
-
-                // se traen los usuarios
-                $scope.loadMoreUsers()
-            }
-        }, 5000);
+        }, $scope.intervalSeconds * 1000);
     }
 
     /**
@@ -140,13 +130,15 @@ MainController.controller('MainController', function($rootScope, $scope, $ionicM
     }
 
     // función que se ejecuata cuando se carga el controlador
-    $scope.initChatController = function(isRefresh) {
-        console.log('initChatController!');
-        console.log('isRefresh: ', isRefresh);
-        // se obtiene la cantidad de chats activos sin leer de "Nicole" y recursivamente de "David"
-        $scope.getUnreadChatsAmount(CONSTANTS.USERS.NICOLE.CODE, isRefresh)
-        // se actualiza el chat
-        $scope.getUsersChatHistory(CONSTANTS.USERS.NICOLE.CODE, isRefresh)
+    $scope.initChatController = function() {
+        console.log('initChatController!')
+        // se obtiene la cantidad de chats activos sin leer de
+        $scope.getUnreadChatsAmount()
+        // se obtiene el listado de chats
+        $scope.getUsersChatHistory()
+        // loading...
+        //$scope.showLoading()
+
     }
 
     $scope.nada = function () {
@@ -160,6 +152,9 @@ MainController.controller('MainController', function($rootScope, $scope, $ionicM
     $scope.getUsers = function() {
         console.log('getUsers...');
         console.log($scope.userDataParams);
+
+        // loading...
+        $ionicLoading.show(CONSTANTS.LOADING.OPTIONS)
 
         var isNewSearch = false
         // validamos si esta buscando un usuario y ha cambiado el termino de búsqueda
@@ -210,7 +205,11 @@ MainController.controller('MainController', function($rootScope, $scope, $ionicM
                 } else {
                     console.log('Error')
                 }
+                // hide loading...
+                $ionicLoading.hide()
             }, function(error) {
+                // hide loading...
+                $ionicLoading.hide()
                 console.log('Error getting users. Error: %s', error);
                 console.log('Error')
             })
@@ -236,7 +235,7 @@ MainController.controller('MainController', function($rootScope, $scope, $ionicM
         // variable que indica si se pueden o no cargar más usuarios
         var moreUsersCanBeLoaded = false
 
-        // Si es la última página, entonces se pueden cargar más usuarios
+        // Si NO es la última página, entonces se pueden cargar más usuarios
         if ($scope.usersData.currentPage < $scope.usersData.lastPage) {
             moreUsersCanBeLoaded = true
         }
@@ -245,92 +244,233 @@ MainController.controller('MainController', function($rootScope, $scope, $ionicM
     }
 
     /**
-     *   Función responsable de obtener el listado de chats activo
-     *
-     *   @param userId, id del usuario del que se desea obtener el historial de chat
+    *   Función que se ejecuta cuando el usuario hace scroll, entonces se requieren cargar más chats
+    */
+    $scope.loadMoreChats = function () {
+        console.log('loadMoreChats... page: %s', $scope.chatsParams.page);
+        if ($scope.moreChatsCanBeLoaded()) {
+            // se pueden cargar más chats, entonces se cargan
+            $scope.getUsersChatHistory()
+            // loading...
+        $scope.showLoading()
+
+        } else {
+            console.log('NO more chats.');
+        }
+    }
+    
+    /**
+    *   Función responsable de verificar si se pueden cargar más usuarios cuando se haga scroll
+    */
+    $scope.moreChatsCanBeLoaded = function () {
+        console.log('moreChatsCanBeLoaded... %s < %s', $scope.chatsPagination.current_page, $scope.chatsPagination.last_page)
+        // variable que indica si se pueden o no cargar más chats
+        var moreChatsCanBeLoaded = false
+
+        // Si NO es la última página, entonces se pueden cargar más chats
+        if ($scope.chatsPagination.current_page < $scope.chatsPagination.last_page) {
+            moreChatsCanBeLoaded = true
+        }
+        console.log(moreChatsCanBeLoaded)
+        return moreChatsCanBeLoaded
+    }
+
+
+    /**
+    *   Función responsable de validar si dos arrays son iguales elemento a elemento
+    */
+    $scope.isArrayEquals = function (arr1, arr2) {
+        // validamos que sean arrays
+        if (!$scope._.isArray(arr1) || !$scope._.isArray(arr2)) {
+            console.log('DIFERENTES NO SON ARRAYS');
+            return false
+        }
+
+        // validamos que tengan la misma cantidad de elmentos
+        if (arr1.length != arr2.length) {
+            // nuevo mensaje
+            $scope.shouldNotify = true
+            console.log('DIFERENTES NO TIENEN LA MISMA LONG');
+            console.log(arr1.length);
+            console.log(arr2.length);
+            return false
+        }
+
+        var elemI
+        var elemJ
+        // ahora validamos elemento a elemento del array
+        for (var i = 0; i < arr1.length; i++) {
+            elemI = {
+                id: arr1[i].id,
+                user_p: arr1[i].user_p,
+                user_s: arr1[i].user_s,
+                visto: arr1[i].visto,
+                mensaje: arr1[i].mensaje,
+                created_at: arr1[i].created_at,
+            }
+
+            elemJ = {
+                id: arr2[i].id,
+                user_p: arr2[i].user_p,
+                user_s: arr2[i].user_s,
+                visto: arr2[i].visto,
+                mensaje: arr2[i].mensaje,
+                created_at: arr2[i].created_at,
+            }
+
+            // validamos si el elemento i de arr1 es igual al elemento i de arr2
+            if (!$scope._.isEqual(elemI, elemJ)) {
+                // si el chat es diferente porque david o nicole enviaron un mensajes, entonces no se notifica al usuario
+                if (!(elemI.user_p == CONSTANTS.USERS.NICOLE.CODE || elemI.user_p == CONSTANTS.USERS.DAVID.CODE)) {
+                    $scope.shouldNotify = true
+                }
+                console.log('DIFERENTES EN EL ELEMENTO i. Notificar? ', $scope.shouldNotify);
+                console.log(arr1[i]);
+                console.log(arr2[i]);
+                return false
+            }
+        }
+        console.log('NO HAY NUEVOS MENSAJES');
+        return true
+    }
+
+    // variable temporal para guardar el listado de chats y luego compararlo con el actual, de ser diferentes se actualiza el actual
+    $scope.chatsTemp = []
+
+    /**
+    *   Función responsable de verificar si hay o no nuevos mensajes de los usuarios
+    */
+    $scope.checkNewChats = function (isRefresh) {
+        // se busca la primera página en busca de nuevos mensajes de los usuarios
+        $scope.restangular.one('listall').get({
+            page: 1
+        }).then(function(response) {
+            // se valida el código de respuesta
+            if (response.status === 200) {
+                // se obtiene la primera pagina del listado de chats
+                var chatsFirstPageCurrent = ($scope._.isArray(response.data.mensajes)) ? response.data.mensajes : []
+
+                // if ($scope.chats.length) {
+                //     chatsFirstPageCurrent[0].user_p  = "11"
+                //     chatsFirstPageCurrent[0].mensaje = "Hola " + Math.random()
+                // }
+
+                // se valida si la primera página es diferente a la que se acaba de obtener, de ser asi entonces 
+                // es porque hay nuevos mensajes
+                if (!$scope.isArrayEquals($scope.chatsFirstPage, chatsFirstPageCurrent)) {
+                    // se actualiza el valor de la primera página y de los chats totales
+                    $scope.chats = chatsFirstPageCurrent
+                    $scope.chatsFirstPage = chatsFirstPageCurrent
+
+                    // se valida si esta disponible el componente de vibración
+                    if ($cordovaVibration && $scope.shouldNotify) {
+                        // vobración
+                        $cordovaVibration.vibrate(500)
+                        // se cambia la bandera de notificación a su estado original
+                        $scope.shouldNotify = false
+                        // se coloca el scroll al top
+                        $scope.scrollTop()
+                        // se consulta por nuevos mensajes
+                        $scope.getUnreadChatsAmount()
+                    }
+                 }
+            } else {
+                console.log('Error chacking new messages')
+            }
+
+            // si el usuario esta haciendo refresh, se emite el evento de que ya se termino el proceso
+            if (isRefresh) {
+                console.log('OK REFERSH');
+                // Stop the ion-refresher from spinning
+                $scope.$broadcast('scroll.refreshComplete')
+            } else {
+                console.log('WAS NO REFERSH');
+            }
+        }, function(error) {
+            if (isRefresh) {
+                console.log('OK REFERSH');
+                // Stop the ion-refresher from spinning
+                $scope.$broadcast('scroll.refreshComplete')
+            } else {
+                console.log('WAS NO REFERSH');
+            }
+
+            console.log('Error getting user chat history. Error: %s', error);
+            console.log('Error')
+        })
+    }
+
+    /**
+     *   Función responsable de obtener el listado de chats actuales
      */
-    $scope.getUsersChatHistory = function(userId, isRefresh) {
-        console.log('isRefresh??? ', isRefresh);
+    $scope.getUsersChatHistory = function() {
+        // loading...
+        $ionicLoading.show(CONSTANTS.LOADING.OPTIONS)
+
         // se realiza la petición http par aobtener el historial de chat del usuario
-        $scope.restangular.one('chat_list', userId).get()
+        $scope.restangular.one('listall').get($scope.chatsParams)
             .then(function(response) {
+                console.log('getUsersChatHistory')
+                console.log(response.data)
+
                 // se valida el código de respuesta
                 if (response.status === 200) {
-                    // si ya se pidieron los chats de Nicole, entonces ahora se piden los de David
-                    if (userId == CONSTANTS.USERS.NICOLE.CODE) {
-                        // se asigna en memoria el listado de chats actual
-                        $scope.chats = response.data
-                            // se piden los chats de David
-                        $scope.getUsersChatHistory(CONSTANTS.USERS.DAVID.CODE, isRefresh)
-                    } else if (userId == CONSTANTS.USERS.DAVID.CODE) {
-                        // se acaban de consultar el listado de chats de David
-                        var chatsDavid = response.data
-                        // entonces se combina con el de Nicole que ya estaba y se ordenda
-                        $scope.chats = $scope._.sortBy($scope._.union($scope.chats, chatsDavid), 'created_at').reverse()
-                        // se valida si es un refresh, de serlo así se emite un broadcast para informar que el evento termina
-                        if (isRefresh) {
-                            console.log('OK REFRESH');
-                            $scope.$broadcast('scroll.refreshComplete');
-                        } else {
-                            console.log('NO REFRESH');
-                        }
+                    // si es la primera página, se resetean los users
+                    if ($scope.chatsParams.page === 1) {
+                        $scope.chats = []
                     }
+
+                    // se mantiene en memoria la información de paginación de los chat
+                    $scope.chatsPagination = response.data.pagination
+                    
+                    // se asigna el listado de chats
+                    $scope.chats = $scope._.union($scope.chats, response.data.mensajes)
+                    console.log('$scope.chats')
+                    console.log($scope.chats)
+
+
+                    // se aumenta la página para la siguiente búsqueda
+                    $scope.chatsParams.page++;
+
+                    // se informa al infinite-scroll que la información ha cargado
+                    $scope.$broadcast('scroll.infiniteScrollComplete');
                 } else {
-                    console.log('Error')
+                    console.log('Error getting chats')
                 }
+
+                // hide loading...
+                $ionicLoading.hide()
             }, function(error) {
-                console.log('Error getting user chat history. Error: %s', error);
-                console.log('Error')
+                // hide loading...
+                $ionicLoading.hide()
+                console.log('Error getting user chats. Error:');
+                console.log(error)
             })
     }
 
     /**
-     *   Función responsable de obtener la cantidad de chats activo
-     *
-     *   @param userId, id del usuario del que se desea obtener la cantidad de chats activos
+     *   Función responsable de obtener la cantidad de chats sin leer
      */
-    $scope.getUnreadChatsAmount = function(userId, isRefresh) {
-        // se realiza la petición http par aobtener el historial de chat del usuario
-        $scope.restangular.one('sinleer', userId).get()
+    $scope.getUnreadChatsAmount = function() {
+        // se realiza la petición http para obtener la cantidad de chats sin leer
+        $scope.restangular.one('sinleeradmin').get()
             .then(function(response) {
                 // se valida el código de respuesta
                 if (response.status === 200) {
-                    // si ya se pidieron los chats de Nicole, entonces ahora se piden los de David
-                    if (userId == CONSTANTS.USERS.NICOLE.CODE) {
-                        // se tiene referencia de cuantos mensajes hay sin leer actualmente
-                        $scope.unreadChatsAmountCurrent = $scope.unreadChatsAmount
+                    console.log('sin leer: ')
+                    console.log(response.data);
 
-                        // se asigna en memoria el listado de chats actual
+                    // se valida si los mensajes sin leer recien consultados son diferentes a los que se tienen en
+                    // memoria, de ser asi entonces se actualizan los de memoria
+                    if ($scope.unreadChatsAmount != response.data.sin_leer) {
                         $scope.unreadChatsAmount = response.data.sin_leer
-                        // se piden los chats de David
-                        $scope.getUnreadChatsAmount(CONSTANTS.USERS.DAVID.CODE, isRefresh)
-                    } else if (userId == CONSTANTS.USERS.DAVID.CODE) {
-                        // se acaban de consultar el listado de chats de David
-                        var unreadChatsDavidAmount = response.data.sin_leer
-                        // entonces se combina con el de Nicole que ya estaba
-                        $scope.unreadChatsAmount += unreadChatsDavidAmount
-                        console.log('sin leer (server): ', $scope.unreadChatsAmount + ' ' + $scope.unreadChatsAmountCurrent);
-                        // se verifica si los mensajes actuales sin leer son menores a los recien consultados en el server,
-                        // de ser asi entonce se actualiza el listado de chats
-                        if ($scope.unreadChatsAmountCurrent != $scope.unreadChatsAmount) {
-                            // se obtiene el listado de chats activos del usuario "Nicole" y recursivamente el de "David"
-                            $scope.getUsersChatHistory(CONSTANTS.USERS.NICOLE.CODE, isRefresh)
-                        } else {
-                            // se valida si es un refresh, de serlo así se emite un broadcast para informar que el evento termina
-                            if (isRefresh) {
-                                console.log('OK REFRESH');
-                                $scope.$broadcast('scroll.refreshComplete');
-                            } else {
-                                console.log('NO REFRESH');
-                            }
-                        }
                     }
                 } else {
-                    console.log('Error')
+                    console.log('Error response. status: %s', response.status)
                 }
             }, function(error) {
-                console.log('Error getting user chat history. Error: %s', error);
-                console.log('Error')
+                console.log('Error getting amount unread chats. Error:');
+                console.log(error)
             })
     }
 
@@ -349,6 +489,7 @@ MainController.controller('MainController', function($rootScope, $scope, $ionicM
         // como valor con tal de que no coincida inicialmente con la var 'termino'
         $scope.userDataParams.terminoPrev = '----cingle----'
         $scope.isSearching = true;
+        $scope.getUsers()
         $scope.searchModal.show();
     };
     $scope.closeSearchUser = function() {
@@ -360,7 +501,11 @@ MainController.controller('MainController', function($rootScope, $scope, $ionicM
 
     // envia al usuario a la pantalla de broadcast
     $scope.goToBroadcast = function() {
-        $state.go('broadcast')
+        $ionicLoading.show(CONSTANTS.LOADING.OPTIONS)
+
+        $timeout(function () {
+            $state.go('broadcast')
+        }, 500)
     };
 
     $scope.$on('$stateChangeStart', function() {
