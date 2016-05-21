@@ -8,6 +8,7 @@
     "restangular": "^1.5.2",
     "underscore": "^1.8.3",
     "moment": "^2.13.0",
-    "ngCordova": "^0.1.26-alpha"
+    "ngCordova": "^0.1.26-alpha",
+    "ionic-content-banner": "^1.0.1"
   }
 }

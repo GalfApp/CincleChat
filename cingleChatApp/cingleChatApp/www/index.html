@@ -32,17 +32,23 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-title" content="Messenger">
+    <!-- top-banner -->
+    <link rel="stylesheet" href="lib/ionic-content-banner/dist/ionic.content.banner.css">
+    
     <!-- compiled css output -->
     <link href="css/ionic.app.css" rel="stylesheet">
     <!-- ionic/angularjs js -->
     <script src="lib/ionic/js/ionic.bundle.min.js"></script>
     <!-- underscore -->
     <script src="lib/underscore/underscore-min.js"></script>
+    <!-- top-banner -->
+    <script src="lib/ionic-content-banner/dist/ionic.content.banner.js"></script>
 
     <!-- restangular -->
     <script src="lib/restangular/dist/restangular.min.js"></script>
     <!-- moment -->
     <script src="lib/moment/min/moment.min.js"></script>
+    
     <!-- ngCordova -->
     <script src="lib/ngCordova/dist/ng-cordova.min.js"></script>
     <!-- cordova script (this will be a 404 during development) -->
@@ -67,12 +73,32 @@
     -->
     <ion-nav-bar class="bar-stable" style="border: none">
     </ion-nav-bar>
+
+    <!-- inapp-notification -->
+    <div class="inapp-notification" 
+            id="app-notification" 
+            ng-click="goToNotification(inAppNotification.userId)"
+            on-swipe-up="skipNotification()">
+        <div class="row">
+            <div class="col image-container">
+                <img class="image-notification" ng-src="{{ inAppNotification.image }}">
+            </div>
+            <div class="col col-90" style="max-width: 85%;">
+                <p class="notification-title">{{ inAppNotification.title }}</p>
+                <p class="notification-message block-with-text">
+                    {{ inAppNotification.message }}
+                </p>
+            </div>
+        </div>
+    </div>
     <!--
       The views will be rendered in the <ion-nav-view> directive below
       Templates are in the /templates folder (but you could also
       have templates inline in this html file if you'd like).
     -->
     <ion-nav-view></ion-nav-view>
+    <!-- move -->
+    <script src="lib/move/move.js"></script>
 </body>
 
 </html>

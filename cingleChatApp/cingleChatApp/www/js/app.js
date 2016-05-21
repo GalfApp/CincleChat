@@ -11,6 +11,7 @@ angular.module('starter', [
     'restangular', 
     'underscore', 
     'ngCordova', 
+    'jett.ionic.content.banner', 
     // app dependencies
     'MainController', 
     'ChatService', 
@@ -25,10 +26,9 @@ angular.module('starter', [
         $rootScope.utilities = utilities
         $rootScope.CONSTANTS = CONSTANTS
         $rootScope._ = _
-        
+
         // se inicializa el plugin de notificaciones
-        pushNotifications.push.init()
-        
+        pushNotifications.init()
 
         // Hide the accessory bar by default (remove this to show the accessory bar above the keyboard
         // for form inputs)

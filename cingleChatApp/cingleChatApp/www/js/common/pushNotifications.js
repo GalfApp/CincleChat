@@ -9,117 +9,190 @@
 // docs: https://github.com/phonegap/phonegap-plugin-push/tree/master/docs
 var pushNotifications = angular.module('pushNotifications', [])
 
-pushNotifications.service('pushNotifications', function($rootScope, CONSTANTS) {
+pushNotifications.service('pushNotifications', ['$rootScope', 'CONSTANTS', '$cordovaVibration', '$timeout',
+    function($rootScope, CONSTANTS, $cordovaVibration, $timeout) {
 
-    var onRegistration = function(data) {
-        // data.registrationId
-        console.log('registration ok');
-        console.log(data.registrationId);
-        // se envía el token al servidor para que tenga una referencia del dispositivo y 
-        // le pueda enviar notificaciones push
-        window.localStorage.setItem('deviceToken', data.registrationId)
-    }
+        // elemento que contiene la plantilla para mostrar la push
+        $rootScope.notification = document.getElementById('app-notification')
 
-    var onNotification = function(data) {
-        // data.message,
-        // data.title,
-        // data.count,
-        // data.sound,
-        // data.image,
-        // data.additionalData
-        console.log('notification received');
-        console.log(data);
+        /**
+        *   Función responsbale de mostrar una inapp-notification
+        */
+        var showNotification = function (notificationData, options) {
+            console.log('notificationData:');
+            console.log(notificationData);
+            // si no hay datos para mostrar, no se muestra nada
+            if (!notificationData) {
+                return
+            }
 
-        // si el usuario tiene abierta la app, entonces se muestra un banner indicandole de la notificacion
-        if (additionalData.foreground) {
-            // #code
-            
+            // se asingna la información al contexto
+            $rootScope.inAppNotification = notificationData;
+            $rootScope.$apply()
+
+            var optionsDefault = {
+                translateY: 100,
+                delayIn: '0s',
+                delayOut: '5s',
+                durationIn: '0.5s',
+                durationOut: '0.3s'
+            }
+
+            if (!options) {
+                options = optionsDefault
+            }
+
+            // se valida si esta disponible el componente de vibración
+            if ($cordovaVibration) {
+                // vibración
+                $cordovaVibration.vibrate(10)
+
+                $timeout(function () {
+                    $cordovaVibration.vibrate(150)
+                }, 100)
+            }
+
+            $rootScope.notification.style.display = "block"; // block | none
+
+            var moveObj = move($rootScope.notification)
+                .ease('in-out')
+                .y(options.translateY || optionsDefault.translateY)
+                .delay(options.delayIn || optionsDefault.delayIn)
+                .duration(options.durationIn || optionsDefault.durationIn)
+                .end(function () {
+                    console.log('show notification done');
+                    move($rootScope.notification)
+                        .ease('in-out')
+                        .y((options.translateY || optionsDefault.translateY) * -1)
+                        .delay(options.delayOut || optionsDefault.delayOut)
+                        .duration(options.durationOut || optionsDefault.durationOut)
+                        .end(function () {
+                            console.log('hide notification done');
+                        });
+                });
         }
 
-        // additionalData: Object
-        //     alert: "fine"
-        //     badge: 1
-        //     coldstart: false
-        //     data: "{\"KEY\":\"START_AUCTION\",\"ANOTHER_VAR\":\"bien!\"}"
-        //     foreground: true
-        //     sound: ""
-        // Object Prototype
-        // count: 1
-        // message: "fine"
-        // sound: ""
-    }
-
-    var onError = function(error) {
-        // e.message
-        console.log('error push');
-        console.log(error);
-    }
-        
-    /**
-    *   Función que inicializa las notificaciones push en la app
-    */
-    this.init = function () {
-        console.log('init push............');
-        // objeto de configuración para las push
-        var pushConfig = {
-            ios: CONSTANTS.PUSH_NOTIFICATIONS.CONFIG.IOS
+        var onRegistration = function(data) {
+            // data.registrationId
+            console.log(data.registrationId);
+            // se envía el token al servidor para que tenga una referencia del dispositivo y 
+            // le pueda enviar notificaciones push
+            window.localStorage.setItem('deviceToken', data.registrationId)
         }
 
-        // se inicializan las push
-        var push = PushNotification.init(pushConfig)
+        var onNotification = function(data) {
+            console.log('notification received');
+            console.log(data);
 
-        // evento que se dispara cuando el dispositivo es registrado en el APN
-        push.on('registration', onRegistration)
+            // si el usuario tiene la app en primer plano, entonces se muestra una inapp-notification
+            if (data.additionalData && (data.additionalData.data && data.additionalData.foreground === true)) {
+                // se convierte a json la info de la notificación
+                var dataJson = angular.fromJson(data.additionalData.data)
 
-        // evento que se dispara cuando se recibe una notificacion
-        push.on('notification', onNotification)
+                var notificationData = {
+                    title: (dataJson.nombres && dataJson.nombres.length === 1) ? (dataJson.nombres[0].nombre + ' ' + dataJson.nombres[0].apellido) : 'New Message',
+                    message: dataJson.mensaje,
+                    image: (dataJson.foto && dataJson.foto.length === 1) ? dataJson.foto[0].foto : 'img/logo.svg',
+                    userId: dataJson.user_p
+                }
 
-        // evento que se dispara cuando hay un error con las notificaciones
-        push.on('error', onError)
-    }
+                // se muestra la notificación
+                showNotification (notificationData)
+            }
+        }
+
+        var onError = function(error) {
+            alert('error notification')
+            // e.message
+            console.log('error push');
+            console.log(error);
+        }
+
+        /**
+        *   Función que inicializa las notificaciones push en la app
+        */
+        this.init = function () {
+            // var notificationData = {
+            //     title: 'New Message',
+            //     message: 'message',
+            //     image: 'img/logo.svg',
+            //     userId: 347
+            // }
 
 
-    /**
-    *   Función que inicial los listeners que recibiran los eventos de push notifications
-    */
-    // this.startListeners = function () {
-    //     alert('startListeners!')
-    //     $rootScope.$on('$cordovaPush:notificationReceived', function(event, notification) {
-    //         console.log('notificationReceived:');
-    //         console.log(notification)
-    //         console.log('event:');
-    //         console.log(event);
+            // $timeout(function () {
+            //     console.log('SHOWWWWW')
+            //     // // se muestra la notificación
+            //     showNotification (notificationData)
 
-    //         $cordovaPush.setBadgeNumber('25')
-    //             .then(function(result) {
-    //                 // Success!
-    //                 console.log('set badge success');
-    //             }, function(err) {
-    //                 // An error occurred. Show a message to the user
-    //             });
-    //     });
-    // }
+            //     $timeout(function () {
+            //         notificationData.message = "hola"
+            //         notificationData.userId = 348
+            //         // // se muestra la notificación
+            //         showNotification (notificationData)
 
-    /**
-    *   Función responsable de registrar el dispositivo en el APN para obtener el deviceToken
-    */
-    // this.register = function () {
-    //     console.log('register push');
-    //     console.log(CONSTANTS.PUSH_NOTIFICATIONS.CONFIG.IOS);
-    //     $cordovaPush.register({
-    //         "badge": true,
-    //         "sound": true,
-    //         "alert": true,
-    //     }).then(function(deviceToken) {
-    //         // Success -- send deviceToken to server, and store for future use
-    //         console.log("deviceToken: " + deviceToken)
-    //         // se registra el token en el servidor para que este pueda enviar notificaciones al dispositivo
-    //         // #code
-    //         window.localStorage.setItem('deviceToken', deviceToken)
-    //     }, function (error) {
-    //         console.log('error registering device:');
-    //         console.log(error);
-    //     })
-    // }
+            //         $timeout(function () {
+            //             notificationData.userId = 349
+            //             notificationData.message = "buenas noches esto es un mensaje largo de prueba buenas noches esto es un mensaje largo de prueba buenas noches esto es un mensaje largo de prueba buenas noches esto es un mensaje largo de prueba "
+            //             // // se muestra la notificación
+            //             showNotification (notificationData)
 
-})
+            //         }, 10000)
+
+            //     }, 5000)
+
+            // }, 5000)
+
+            // $timeout(function () {
+            //     notificationData.message = 'message 2'
+            //     showNotification (notificationData)
+
+            //     $timeout(function () {
+            //         notificationData.message = 'message 3'
+            //         showNotification (notificationData)
+
+            //         notificationData.message = 'message 4'
+            //         showNotification (notificationData)
+
+            //         notificationData.message = 'message 5'
+            //         showNotification (notificationData)
+                    
+            //         $timeout(function () {
+            //             notificationData.message = 'message 2'
+            //             showNotification (notificationData)
+
+
+            //             notificationData.message = 'message 6'
+            //             showNotification (notificationData)
+
+            //             notificationData.message = 'message 7'
+            //             showNotification (notificationData)
+            //         }, 3000)
+            //     }, 2000)
+
+            // }, 2000)
+
+            // $timeout(function () {
+            //     console.log('ok?')
+            //     notificationData.message = 'message X'
+            // }, 10000)
+
+            console.log('init push............');
+            // objeto de configuración para las push
+            var pushConfig = {
+                ios: CONSTANTS.PUSH_NOTIFICATIONS.CONFIG.IOS
+            }
+
+            // se inicializan las push
+            var push = PushNotification.init(pushConfig)
+
+            // evento que se dispara cuando el dispositivo es registrado en el APN
+            push.on('registration', onRegistration)
+
+            // evento que se dispara cuando se recibe una notificacion
+            push.on('notification', onNotification)
+
+            // evento que se dispara cuando hay un error con las notificaciones
+            push.on('error', onError)
+        }
+    }])

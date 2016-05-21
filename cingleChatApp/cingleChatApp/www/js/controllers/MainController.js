@@ -2,21 +2,18 @@
 var MainController = angular.module('MainController', []);
 
 // controlador principal de la app
-MainController.controller('MainController', function($rootScope, $scope, $ionicModal, $ionicScrollDelegate, ChatService, Restangular, CONSTANTS, $interval, $state, $timeout, $cordovaVibration, $ionicLoading) {
+MainController.controller('MainController', function($rootScope, $scope, $ionicModal, $ionicScrollDelegate, ChatService, Restangular, CONSTANTS, $interval, $state, $timeout, $cordovaVibration, $ionicLoading, $ionicContentBanner) {
     // se configura restangular de forma global
     $scope.restangular = Restangular
 
-    // $timeout(function () {
-    //     console.log('setTimeout...')
-    //     $interval(function () {
-    //         console.log('register......................................................');
-    //         // se inicializa el plugin de notificaciones
-    //         $scope.push.register()
-    //     }, 10000)
-    // }, 20000)
-
+    // Función global para realizar un back en cualquier pantalla
+    $scope.goToChatList = function() {
+        $ionicLoading.show(CONSTANTS.LOADING.OPTIONS)
+        $state.go('chats')
+    }
     // Función global para realizar un back en cualquier pantalla
     $scope.historyBack = function() {
+        $ionicLoading.show(CONSTANTS.LOADING.OPTIONS)
         window.history.back()
     }
     
@@ -30,6 +27,41 @@ MainController.controller('MainController', function($rootScope, $scope, $ionicM
     $scope.scrollTop = function() {
         console.log('scrollTop...');
         $ionicScrollDelegate.scrollTop();
+    }
+
+    /**
+    *   Función que se ejecuta cuando es tocada una inapp-notification
+    */
+    $rootScope.goToNotification = function (userId) {
+        console.log('see chat: ' +  userId);
+        // se esconde el div que muestra la notificación
+        $rootScope.notification.style.display = "none"; // block | none
+        $state.go('chats-detail', {
+            userId: userId
+        })
+    }
+
+    /**
+    *   Función que es llamada cuando se omite una notificacion intencionalmente
+    */
+    $rootScope.skipNotification = function () {
+        console.log('skipNotification...');
+        //$rootScope.notification.style.display = "none"; // block | none
+
+        var options = {
+            translateY: 120,
+            delayOut: '0s',
+            durationOut: '0.3s'
+        }
+
+        move($rootScope.notification)
+            .ease('in-out')
+            .y(options.translateY * -1)
+            .delay(options.delayOut)
+            .duration(options.durationOut)
+            .end(function () {
+                console.log('skip notification done');
+            });
     }
 
     /**
@@ -136,9 +168,6 @@ MainController.controller('MainController', function($rootScope, $scope, $ionicM
         $scope.getUnreadChatsAmount()
         // se obtiene el listado de chats
         $scope.getUsersChatHistory()
-        // loading...
-        //$scope.showLoading()
-
     }
 
     $scope.nada = function () {
@@ -251,9 +280,6 @@ MainController.controller('MainController', function($rootScope, $scope, $ionicM
         if ($scope.moreChatsCanBeLoaded()) {
             // se pueden cargar más chats, entonces se cargan
             $scope.getUsersChatHistory()
-            // loading...
-        $scope.showLoading()
-
         } else {
             console.log('NO more chats.');
         }

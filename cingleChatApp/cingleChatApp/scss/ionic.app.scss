@@ -117,6 +117,7 @@ $popup-border-radius: 5px !default;
 $modal-inset-mode-break-point: 9999px !default;
 // custom
 $button-default-border: #f6f6f6;
+
 // @media min-width
 // Include all of Ionic
 @import // Ionicons
@@ -881,4 +882,60 @@ pre {
 
 .upercase {
     text-transform: uppercase
+}
+
+.inapp-notification {
+    position: absolute;
+    z-index: 100000001;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: rgba(0, 0, 0, 0.8);
+    text-align: justify;
+    overflow: hidden;
+    color: #fff;
+    max-height: 76px;
+    line-height: 15px;
+    top: -100px;
+}
+
+.inapp-notification p {
+    margin: 0px;
+    padding: 0px;
+}
+
+.inapp-notification .notification-title {
+    font-weight: bold;
+    /*margin-top: -6px;*/
+
+}
+
+.inapp-notification .notification-message {
+    line-height: 17px;
+}
+
+.line-clamp {
+  overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical; 
+}
+
+.block-with-text {
+  overflow: hidden;
+  position: relative;
+  max-height: 36px; 
+}
+.inapp-notification .row {
+    padding: 10px;
+}
+
+.inapp-notification .image-container {
+    text-align: center;
+}
+
+.inapp-notification .image-notification {
+    border-radius: 50%;
+    width: 40px;
+    margin-top: 2px;
 }
