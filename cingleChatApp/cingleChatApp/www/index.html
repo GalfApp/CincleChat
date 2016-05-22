@@ -61,7 +61,6 @@
     <script src="js/controllers/MainController.js"></script>
     <script src="js/controllers/ChatController.js"></script>
     <script src="js/controllers/BroadcastController.js"></script>
-    <script src="js/services/ChatService.js"></script>
     <script src="js/utils/angular-underscore.js"></script>
     
     <script src="lib/ng-tags-input.min.js"></script>
@@ -77,7 +76,7 @@
     <!-- inapp-notification -->
     <div class="inapp-notification" 
             id="app-notification" 
-            ng-click="goToNotification(inAppNotification.userId)"
+            ng-click="goToNotification(inAppNotification.userId, inAppNotification.agentId)"
             on-swipe-up="skipNotification()">
         <div class="row">
             <div class="col image-container">

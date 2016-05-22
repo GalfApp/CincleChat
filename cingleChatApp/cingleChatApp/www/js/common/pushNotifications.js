@@ -78,27 +78,52 @@ pushNotifications.service('pushNotifications', ['$rootScope', 'CONSTANTS', '$cor
             // se envía el token al servidor para que tenga una referencia del dispositivo y 
             // le pueda enviar notificaciones push
             window.localStorage.setItem('deviceToken', data.registrationId)
+
+            // se emite el evento para almacenar el token en el server
+            $rootScope.$broadcast('saveDeviceTokenEvent', {
+                deviceToken: data.registrationId
+            });
         }
 
         var onNotification = function(data) {
             console.log('notification received');
             console.log(data);
 
+            $rootScope.$broadcast('onNotificationEvent');
+
             // si el usuario tiene la app en primer plano, entonces se muestra una inapp-notification
-            if (data.additionalData && (data.additionalData.data && data.additionalData.foreground === true)) {
+            if (data.additionalData && data.additionalData.data) {
                 // se convierte a json la info de la notificación
                 var dataJson = angular.fromJson(data.additionalData.data)
 
-                var notificationData = {
-                    title: (dataJson.nombres && dataJson.nombres.length === 1) ? (dataJson.nombres[0].nombre + ' ' + dataJson.nombres[0].apellido) : 'New Message',
-                    message: dataJson.mensaje,
-                    image: (dataJson.foto && dataJson.foto.length === 1) ? dataJson.foto[0].foto : 'img/logo.svg',
-                    userId: dataJson.user_p
-                }
+                console.log('dataJson');
+                console.log(dataJson);
 
-                // se muestra la notificación
-                showNotification (notificationData)
+                if (data.additionalData.foreground === true) {
+                    // objeto para mostrar la inapp-notification
+                    var notificationData = {
+                        title: (dataJson.nombres && dataJson.nombres.length === 1) ? (dataJson.nombres[0].nombre + ' ' + dataJson.nombres[0].apellido) : 'New Message',
+                        message: dataJson.mensaje,
+                        image: (dataJson.foto && dataJson.foto.length === 1) ? dataJson.foto[0].foto : 'img/logo.svg',
+                        userId: dataJson.user_p,
+                        agentId: dataJson.user_s
+                    }
+
+                    var currentUserIdChat = window.localStorage.getItem('currentUserIdChat')
+                    console.log('currentUserIdChat: ' + currentUserIdChat)
+                    // si el usuario esta en un chat y llega una push del mismo usuario, entonces no se muestra el inapp-notification
+                    if (currentUserIdChat != dataJson.user_p) {
+                        // se muestra la notificación
+                        showNotification (notificationData)
+                    }
+                } else {
+                    $rootScope.$broadcast('goToNotificationEvent', {
+                        userId: dataJson.user_p,
+                        agentId: dataJson.user_s
+                    });
+                }
             }
+
         }
 
         var onError = function(error) {
@@ -112,71 +137,6 @@ pushNotifications.service('pushNotifications', ['$rootScope', 'CONSTANTS', '$cor
         *   Función que inicializa las notificaciones push en la app
         */
         this.init = function () {
-            // var notificationData = {
-            //     title: 'New Message',
-            //     message: 'message',
-            //     image: 'img/logo.svg',
-            //     userId: 347
-            // }
-
-
-            // $timeout(function () {
-            //     console.log('SHOWWWWW')
-            //     // // se muestra la notificación
-            //     showNotification (notificationData)
-
-            //     $timeout(function () {
-            //         notificationData.message = "hola"
-            //         notificationData.userId = 348
-            //         // // se muestra la notificación
-            //         showNotification (notificationData)
-
-            //         $timeout(function () {
-            //             notificationData.userId = 349
-            //             notificationData.message = "buenas noches esto es un mensaje largo de prueba buenas noches esto es un mensaje largo de prueba buenas noches esto es un mensaje largo de prueba buenas noches esto es un mensaje largo de prueba "
-            //             // // se muestra la notificación
-            //             showNotification (notificationData)
-
-            //         }, 10000)
-
-            //     }, 5000)
-
-            // }, 5000)
-
-            // $timeout(function () {
-            //     notificationData.message = 'message 2'
-            //     showNotification (notificationData)
-
-            //     $timeout(function () {
-            //         notificationData.message = 'message 3'
-            //         showNotification (notificationData)
-
-            //         notificationData.message = 'message 4'
-            //         showNotification (notificationData)
-
-            //         notificationData.message = 'message 5'
-            //         showNotification (notificationData)
-                    
-            //         $timeout(function () {
-            //             notificationData.message = 'message 2'
-            //             showNotification (notificationData)
-
-
-            //             notificationData.message = 'message 6'
-            //             showNotification (notificationData)
-
-            //             notificationData.message = 'message 7'
-            //             showNotification (notificationData)
-            //         }, 3000)
-            //     }, 2000)
-
-            // }, 2000)
-
-            // $timeout(function () {
-            //     console.log('ok?')
-            //     notificationData.message = 'message X'
-            // }, 10000)
-
             console.log('init push............');
             // objeto de configuración para las push
             var pushConfig = {

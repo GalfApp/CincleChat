@@ -4,6 +4,10 @@
                 ng-click="goToChatList()">
         </button>
     </ion-nav-buttons>
+    <ion-nav-buttons side="right">
+        <span ng-if="codeAgent == constants.USERS.NICOLE.CODE">Nicole</span>
+        <span ng-if="codeAgent == constants.USERS.DAVID.CODE">David</span>
+    </ion-nav-buttons>
     <!-- <ion-nav-buttons side="right">
         <span class="badge avatar-badge avatar-badge" 
                 ng-class="{'badge-female':userToChat.sexo=='F', 'badge-male':userToChat.sexo=='M'}"

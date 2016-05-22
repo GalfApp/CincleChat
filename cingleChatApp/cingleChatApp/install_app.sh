@@ -8,7 +8,8 @@ ionic platform add ios;
 
 cordova plugin add cordova-plugin-vibration;
 cordova plugin add cordova-plugin-splashscreen;
-cordova plugin add https://github.com/phonegap-build/PushPlugin.git;
+cordova plugin add cordova-plugin-dialogs;
+cordova plugin add phonegap-plugin-push --variable SENDER_ID="XXXXXXX"
 
 bower install;
 

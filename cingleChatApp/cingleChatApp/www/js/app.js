@@ -14,7 +14,6 @@ angular.module('starter', [
     'jett.ionic.content.banner', 
     // app dependencies
     'MainController', 
-    'ChatService', 
     'utilities', 
     'constants',
     'pushNotifications'
@@ -26,6 +25,9 @@ angular.module('starter', [
         $rootScope.utilities = utilities
         $rootScope.CONSTANTS = CONSTANTS
         $rootScope._ = _
+
+        // de entrada no se esta hablando con ningun usuario
+        window.localStorage.setItem('currentUserIdChat', '0')
 
         // se inicializa el plugin de notificaciones
         pushNotifications.init()
@@ -106,7 +108,7 @@ angular.module('starter', [
         })
 
         .state('chats-detail', {
-            url: '/chats/:userId',
+            url: '/chats/:userId/:agentId',
             templateUrl: 'templates/chat-detail.html',
             controller: 'ChatController'
         })

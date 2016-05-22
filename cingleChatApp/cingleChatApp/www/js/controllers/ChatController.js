@@ -1,5 +1,5 @@
 // controlador para los chats
-MainController.controller('ChatController', function($scope, $stateParams, $q, CONSTANTS, $interval, $ionicListDelegate, $ionicLoading) {
+MainController.controller('ChatController', function($scope, $stateParams, $q, CONSTANTS, $interval, $ionicListDelegate, $ionicLoading, $cordovaDialogs) {
     console.log('ChatController!');
     // chat con un usuario
     $scope.chat = []
@@ -37,6 +37,25 @@ MainController.controller('ChatController', function($scope, $stateParams, $q, C
     }
 
     /**
+     *   Función responsable de dados dos ids de usuario, obtener el del agente de cingle 
+     *   y no el del usuario cingle
+     */
+    $scope.getAgentUserId = function(userP, userS) {
+        var cingleAgentId = ''
+
+        var userId = $scope.getCingleUserId(userP, userS)
+
+        // se valida cual de los dos corresponde a un usuario de cingle
+        if (userId == userP) {
+            cingleAgentId = userS
+        } else {
+            cingleAgentId = userP
+        }
+
+        return cingleAgentId
+    }
+
+    /**
      *   Función responsable de crear una nueva conversación
      */
     var createChat = function(userId) {
@@ -48,8 +67,9 @@ MainController.controller('ChatController', function($scope, $stateParams, $q, C
                 // se valida el código de respuesta
                 if (response.status === 200) {
                     console.log(response.data)
-                        // done, chat creado o puede que ya exista.. de cualquier modo se pide el chat actual
-                    getChat($stateParams.userId)
+
+                    // se pide el chat actual
+                    //getChat($stateParams.userId)
 
                     // se inicia la tarea que concurrentemente esta consultando en el server por nuevos mensajes
                     startChatInterval()
@@ -145,7 +165,7 @@ MainController.controller('ChatController', function($scope, $stateParams, $q, C
     /**
      *   Función responsable de obtener una conversación
      */
-    var getChat = function(userId, userSex) {
+    var getChat = function(userId) {
         console.log('get chat...');
         var currentMessages = $scope.chat.length
 
@@ -247,27 +267,39 @@ MainController.controller('ChatController', function($scope, $stateParams, $q, C
         console.log('Params:');
         console.log($stateParams)
 
+        window.localStorage.setItem('currentUserIdChat', $stateParams.userId)
+
         // loading...
         $ionicLoading.show(CONSTANTS.LOADING.OPTIONS)
 
-        // se valida si se debe crear una nueva conversación o si es una ya 
-        if ($stateParams.userId) {
-            // se consulta la información del usuario a chatear, si existe el usuario se empieza un chat o se consulta el chat ya existente
-            var getUserData = $scope.getUserData($stateParams.userId);
-
-            // cuando se obtenga la información del usuario se empieza el chat
-            getUserData.then(function(response) {
+        // se consulta la información del usuario a chatear, si existe el usuario se empieza un chat o se consulta el chat ya existente
+        var getUserData = $scope.getUserData($stateParams.userId);
+        console.log('getUserData');
+        console.log(getUserData);
+        // cuando se obtenga la información del usuario se empieza el chat
+        getUserData.then(function(response) {
+            // si no hay agent id, es porque no se ha creado la conversacion
+            if (!$stateParams.agentId) {
                 console.log('$scope.userToChat.sexo: ', $scope.userToChat.sexo);
                 // el codigo del agente depende del sexo del usuario
                 $scope.codeAgent = ($scope.userToChat.sexo.toLowerCase() == 'm') ? CONSTANTS.USERS.NICOLE.CODE : CONSTANTS.USERS.DAVID.CODE
 
                 // se intenta crear siempre el chat
                 createChat($stateParams.userId)
-            }, function(reason) {
-                console.log('Error to get the user')
-                $scope.historyBack()
-            });
-        }
+            } else {
+                // se asigna el id del agente
+                $scope.codeAgent = $stateParams.agentId
+                // se pide el chat actual
+                getChat($stateParams.userId)
+
+                // se inicia la tarea que concurrentemente esta consultando en el server por nuevos mensajes
+                startChatInterval()
+            }
+        }, function(reason) {
+            console.log('Error to get the user')
+            $scope.historyBack()
+        })
+
     }
 
 
@@ -314,27 +346,38 @@ MainController.controller('ChatController', function($scope, $stateParams, $q, C
     *   function responsable de eliminar un chat
     */
     $scope.removeChat = function(chat, index) {
-        // se valida que existan los ids para eliminar el chat
-        if (chat.user_p && chat.user_s) {
-            // Se elimina el chat
-            $scope.restangular.one('delete_chat', chat.user_p).all(chat.user_s)
-                .post('', {})
-                .then(function(response) {
-                    // se valida el código de respuesta
-                    if (response.status === 200) {
-                        console.log('Chat Eliminado...');
-                        // se elimina de memoria el index
-                        $scope.chats.splice(index, 1)
-                        // se actualiza el listado de chats
-                        $scope.getUnreadChatsAmount(CONSTANTS.USERS.NICOLE.CODE, false)
-                    } else {
-                        console.log('Error')
-                    }
-                }, function(error) {
-                    console.log('Error deleting. Error: ');
-                    console.log(error);
-                })
-        }
+        $cordovaDialogs.confirm('Are you sure you want to delete this chat?', 'Confirm', ['Cancel', 'Ok'])
+        .then(function(buttonIndex) {
+            console.log('buttonIndex: %s', buttonIndex);
+
+            // esta seguro
+            if (buttonIndex == 2) {
+                // se valida que existan los ids para eliminar el chat
+                if (chat.user_p && chat.user_s) {
+                    // Se elimina el chat
+                    $scope.restangular.one('delete_chat', chat.user_p).all(chat.user_s)
+                        .post('', {})
+                        .then(function(response) {
+                            // se valida el código de respuesta
+                            if (response.status === 200) {
+                                console.log('Chat Eliminado...');
+                                // se elimina de memoria el index
+                                $scope.chats.splice(index, 1)
+                                // se actualiza el listado de chats
+                                $scope.getUnreadChatsAmount(CONSTANTS.USERS.NICOLE.CODE, false)
+                            } else {
+                                console.log('Error')
+                            }
+                        }, function(error) {
+                            console.log('Error deleting. Error: ');
+                            console.log(error);
+                        })
+                }
+            } else {
+                // se ocultan los botones que parecen cuando se hizo swipe
+                $ionicListDelegate.closeOptionButtons()
+            }
+        });
     };
 
     /**
@@ -354,7 +397,6 @@ MainController.controller('ChatController', function($scope, $stateParams, $q, C
                         $scope.chats[index].mensaje = ''
                         // se actualiza el listado de chats
                         $scope.getUnreadChatsAmount(CONSTANTS.USERS.NICOLE.CODE, false)
-
                         // se ocultan los botones que parecen cuando se hizo swipe
                         $ionicListDelegate.closeOptionButtons()
                     } else {

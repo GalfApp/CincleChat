@@ -2,93 +2,13 @@
 var MainController = angular.module('MainController', []);
 
 // controlador principal de la app
-MainController.controller('MainController', function($rootScope, $scope, $ionicModal, $ionicScrollDelegate, ChatService, Restangular, CONSTANTS, $interval, $state, $timeout, $cordovaVibration, $ionicLoading, $ionicContentBanner) {
+MainController.controller('MainController', function($rootScope, $scope, $ionicModal, $ionicScrollDelegate, Restangular, CONSTANTS, $interval, $state, $timeout, $cordovaVibration, $ionicLoading, $ionicContentBanner, $q) {
     // se configura restangular de forma global
     $scope.restangular = Restangular
-
-    // Función global para realizar un back en cualquier pantalla
-    $scope.goToChatList = function() {
-        $ionicLoading.show(CONSTANTS.LOADING.OPTIONS)
-        $state.go('chats')
-    }
-    // Función global para realizar un back en cualquier pantalla
-    $scope.historyBack = function() {
-        $ionicLoading.show(CONSTANTS.LOADING.OPTIONS)
-        window.history.back()
-    }
-    
-    // función global para realizar scroll bottom en cualquier pantalla
-    $scope.scrollBottom = function() {
-        console.log('scrollBottom...');
-        $ionicScrollDelegate.scrollBottom();
-    }
-
-    // función global para realizar scroll top en cualquier pantalla
-    $scope.scrollTop = function() {
-        console.log('scrollTop...');
-        $ionicScrollDelegate.scrollTop();
-    }
-
-    /**
-    *   Función que se ejecuta cuando es tocada una inapp-notification
-    */
-    $rootScope.goToNotification = function (userId) {
-        console.log('see chat: ' +  userId);
-        // se esconde el div que muestra la notificación
-        $rootScope.notification.style.display = "none"; // block | none
-        $state.go('chats-detail', {
-            userId: userId
-        })
-    }
-
-    /**
-    *   Función que es llamada cuando se omite una notificacion intencionalmente
-    */
-    $rootScope.skipNotification = function () {
-        console.log('skipNotification...');
-        //$rootScope.notification.style.display = "none"; // block | none
-
-        var options = {
-            translateY: 120,
-            delayOut: '0s',
-            durationOut: '0.3s'
-        }
-
-        move($rootScope.notification)
-            .ease('in-out')
-            .y(options.translateY * -1)
-            .delay(options.delayOut)
-            .duration(options.durationOut)
-            .end(function () {
-                console.log('skip notification done');
-            });
-    }
-
-    /**
-    *   Función responsable de indicar si un usuario es o no agente de cingle
-    */
-    $scope.isCingleAgent = function (userId) {
-        return (userId == CONSTANTS.USERS.NICOLE.CODE || userId == CONSTANTS.USERS.DAVID.CODE)
-    }
-
-    /**
-    *   Función responsable de obtener la imagen conrrespondiante a un agente de la app
-    */
-    $scope.getAgentPathImg = function (userId) {
-        // path de la imagen del agente
-        var pathImage = ''
-
-        // validamos si es Nicole
-        if (userId == CONSTANTS.USERS.NICOLE.CODE) {
-            pathImage = 'img/nicole.png'
-        } else if (userId == CONSTANTS.USERS.DAVID.CODE) {
-            pathImage = 'img/david.png'
-        }
-
-        return pathImage
-    }
+    // constantes
+    $scope.constants = CONSTANTS
     // indica cada cuanto se consulta por nuevos mensajes
-    $scope.intervalSeconds = 10
+    $scope.intervalSeconds = 30
     // Lista de usuarios de la app
     $scope.users = []
     // información de los usuarios de cingle
@@ -125,9 +45,171 @@ MainController.controller('MainController', function($rootScope, $scope, $ionicM
         current_page: -1,
         last_page: 0
     }
-    
+
     var chatsInverval
     var chatsInvervalIndex = 0
+
+    // Función global para realizar un back en cualquier pantalla
+    $scope.goToChatList = function() {
+        window.localStorage.setItem('currentUserIdChat', 0)
+        $ionicLoading.show(CONSTANTS.LOADING.OPTIONS)
+        $state.go('chats')
+    }
+    // Función global para realizar un back en cualquier pantalla
+    $scope.historyBack = function() {
+        window.localStorage.setItem('currentUserIdChat', 0)
+        $ionicLoading.show(CONSTANTS.LOADING.OPTIONS)
+        window.history.back()
+    }
+    
+    // función global para realizar scroll bottom en cualquier pantalla
+    $scope.scrollBottom = function() {
+        console.log('scrollBottom...');
+        $ionicScrollDelegate.scrollBottom();
+    }
+
+    // función global para realizar scroll top en cualquier pantalla
+    $scope.scrollTop = function() {
+        console.log('scrollTop...');
+        $ionicScrollDelegate.scrollTop();
+    }
+
+    /**
+    *   Función que se ejecuta cuando es tocada una inapp-notification
+    */
+    $rootScope.goToNotification = function (userId, agentId) {
+        console.log('see chat: ' +  userId);
+        // se esconde el div que muestra la notificación
+        $rootScope.notification.style.display = "none"; // block | none
+        $state.go('chats-detail', {
+            userId: userId,
+            agentId: agentId
+        })
+    }
+
+    /**
+    *   Función que es llamada cuando se omite una notificacion intencionalmente
+    */
+    $rootScope.skipNotification = function () {
+        console.log('skipNotification...');
+        //$rootScope.notification.style.display = "none"; // block | none
+
+        var options = {
+            translateY: 120,
+            delayOut: '0s',
+            durationOut: '0.3s'
+        }
+
+        move($rootScope.notification)
+            .ease('in-out')
+            .y(options.translateY * -1)
+            .delay(options.delayOut)
+            .duration(options.durationOut)
+            .end(function () {
+                console.log('skip notification done');
+            });
+    }
+
+    /**
+    *   Función responsable de verificar si un deviceToken ya ha sido almacenado en el server
+    */
+    var checkDeviceToken = function (deviceToken) {
+        console.log('checkDeviceToken...')
+        var deferred = $q.defer();
+
+        // se consultan los tokens actuales del servidor
+        $scope.restangular.one('obtener_tokens')
+            .get()
+            .then(function(response) {
+                // se valida el código de respuesta
+                if (response.status === 200) {
+                    // tokens almacenados en el server
+                    var currentDeviceTokens = response.data
+                    var keysObj = Object.keys(currentDeviceTokens)
+
+                    // indica si se ha encontrado o no el token
+                    var isFound = false
+
+                    for (var i = 0; !isFound && (i < keysObj.length); i++) {
+                        console.log('currentDeviceTokens[i].token:', currentDeviceTokens[i].token)
+                        console.log('deviceToken:', deviceToken)
+                        // se valida si el token que llega como parámetro es igual a alguno de la lista
+                        if (currentDeviceTokens[i].token === deviceToken) {
+                            // token encontrado
+                            isFound = true
+                            console.log('encontrado!');
+                        }
+                    }
+
+                    deferred.resolve(isFound)
+                } else {
+                    console.log('Error getting devices token')
+                    deferred.reject('Error getting devices token')
+                }
+            }, function(error) {
+                console.log('Error getting devices token. Error: ');
+                console.log(error)
+                deferred.reject(error)
+            })
+
+        return deferred.promise
+    }
+
+    /**
+    *   Función responsable de almacenar un deviceToken en el servidor para
+    *   usarlo cuando se vaya a enviar notificaciones a los usuarios   
+    */
+    var saveDeviceToken = function (deviceToken) {
+        // se busca la primera página en busca de nuevos mensajes de los usuarios
+        checkDeviceToken(deviceToken).then(function (exists) {
+            // se verifica si el token ya existe
+            if (!exists) {
+                console.log('guardar token, no existe')
+                var params = {
+                    token: deviceToken
+                }
+                // Se guarda el token
+                $scope.restangular.one('guardar_token', '')
+                .post('', {}, params).then(function(response) {
+                        // se valida el código de respuesta
+                        if (response.status === 200) {
+                            console.log('deviceToken saved!! %s', deviceToken);
+                        } else {
+                            console.log('Error savind deviceToken')
+                        }
+                    }, function(error) {
+                        console.log('Error savind deviceToken. Error: ');
+                        console.log(error);
+                    })
+            } else {
+                console.log('el token ya existe. %s', deviceToken)
+            }
+        })
+    }
+
+    /**
+    *   Función responsable de indicar si un usuario es o no agente de cingle
+    */
+    $scope.isCingleAgent = function (userId) {
+        return (userId == CONSTANTS.USERS.NICOLE.CODE || userId == CONSTANTS.USERS.DAVID.CODE)
+    }
+
+    /**
+    *   Función responsable de obtener la imagen conrrespondiante a un agente de la app
+    */
+    $scope.getAgentPathImg = function (userId) {
+        // path de la imagen del agente
+        var pathImage = ''
+
+        // validamos si es Nicole
+        if (userId == CONSTANTS.USERS.NICOLE.CODE) {
+            pathImage = 'img/nicole.png'
+        } else if (userId == CONSTANTS.USERS.DAVID.CODE) {
+            pathImage = 'img/david.png'
+        }
+
+        return pathImage
+    }
 
     /**
      *   Función responsable de iniciar un interval que consulta frecuentemente por nuevos chats
@@ -138,7 +220,7 @@ MainController.controller('MainController', function($rootScope, $scope, $ionicM
 
         chatsInverval = $interval(function() {
             console.log('chatsInterval...');
-            // se verifica si hay nuevos mensajes sin leer
+            // se verifica si hay nuevos chats
             $scope.checkNewChats(false)
             // se lleva un registro de cuantas veces ha corrido el interval
             chatsInvervalIndex++
@@ -367,6 +449,12 @@ MainController.controller('MainController', function($rootScope, $scope, $ionicM
     *   Función responsable de verificar si hay o no nuevos mensajes de los usuarios
     */
     $scope.checkNewChats = function (isRefresh) {
+        // se muestra el loading si es un refresh intencional
+        if (isRefresh) {
+            // loading...
+            $ionicLoading.show(CONSTANTS.LOADING.OPTIONS)
+        }
+
         // se busca la primera página en busca de nuevos mensajes de los usuarios
         $scope.restangular.one('listall').get({
             page: 1
@@ -395,7 +483,7 @@ MainController.controller('MainController', function($rootScope, $scope, $ionicM
                         // se cambia la bandera de notificación a su estado original
                         $scope.shouldNotify = false
                         // se coloca el scroll al top
-                        $scope.scrollTop()
+                        // $scope.scrollTop()
                         // se consulta por nuevos mensajes
                         $scope.getUnreadChatsAmount()
                     }
@@ -406,6 +494,8 @@ MainController.controller('MainController', function($rootScope, $scope, $ionicM
 
             // si el usuario esta haciendo refresh, se emite el evento de que ya se termino el proceso
             if (isRefresh) {
+                // hide loading...
+                $ionicLoading.hide()
                 console.log('OK REFERSH');
                 // Stop the ion-refresher from spinning
                 $scope.$broadcast('scroll.refreshComplete')
@@ -414,6 +504,8 @@ MainController.controller('MainController', function($rootScope, $scope, $ionicM
             }
         }, function(error) {
             if (isRefresh) {
+                // hide loading...
+                $ionicLoading.hide()
                 console.log('OK REFERSH');
                 // Stop the ion-refresher from spinning
                 $scope.$broadcast('scroll.refreshComplete')
@@ -533,6 +625,25 @@ MainController.controller('MainController', function($rootScope, $scope, $ionicM
             $state.go('broadcast')
         }, 500)
     };
+
+    // evento para abrir una notificacion
+    $scope.$on('goToNotificationEvent', function (event, data) {
+        console.log('goToNotificationEvent')
+        $rootScope.goToNotification(data.userId, data.agentId)
+    });
+
+    // listen for the event in the relevant $scope
+    $scope.$on('saveDeviceTokenEvent', function (event, data) {
+        console.log('saveDeviceTokenEvent')
+        saveDeviceToken(data.deviceToken)
+    });
+
+    // evento que se lanza cuando hay una nueva notificacion
+    $scope.$on('onNotificationEvent', function (event, data) {
+        console.log('onNotificationEvent')
+        // ha llegado una notificaciochats
+        $scope.checkNewChats(false)
+    });
 
     $scope.$on('$stateChangeStart', function() {
         if ($scope.searchModal) {
