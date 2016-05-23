@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="focus-example">
+  <head>
+    <meta charset="utf-8" />
+    <title>angular-focus example</title>
+    <script src="../components/angular/angular.js"></script>
+    <script src="../dist/angular-focus.js"></script>
+    <script>
+      var app = angular.module('focus-example', ['focus']);
+    </script>
+    <script>
+
+      app.controller('MainCtrl', function($scope, $element) {
+        $scope.inputfocus = false;
+        $scope.focusInput = function(){
+          $scope.inputfocus = true;
+        };
+
+        $scope.blurInput = function(){
+          $scope.inputfocus = false;
+        };
+
+      });
+    </script>
+  </head>
+  <body ng-controller="MainCtrl">
+
+    <button ng-click="focusInput()">Focus on the input</button>
+    <button ng-click="blurInput()">Blur the input</button>
+    <input type="text" focus="inputfocus">
+    <div>{{inputfocus}}</div>
+  </body>
+</html>

@@ -11,7 +11,7 @@ angular.module('starter', [
     'restangular', 
     'underscore', 
     'ngCordova', 
-    'jett.ionic.content.banner', 
+    'jett.ionic.content.banner',
     // app dependencies
     'MainController', 
     'utilities', 

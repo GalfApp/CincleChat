@@ -51,9 +51,15 @@ MainController.controller('MainController', function($rootScope, $scope, $ionicM
 
     // Función global para realizar un back en cualquier pantalla
     $scope.goToChatList = function() {
-        window.localStorage.setItem('currentUserIdChat', 0)
         $ionicLoading.show(CONSTANTS.LOADING.OPTIONS)
-        $state.go('chats')
+
+        $timeout(function () {
+            window.localStorage.setItem('currentUserIdChat', 0)
+            $state.go('chats').then(function () {
+                $scope.scrollTop()
+                $ionicLoading.hide()
+            })
+        }, 300)
     }
     // Función global para realizar un back en cualquier pantalla
     $scope.historyBack = function() {
@@ -78,13 +84,20 @@ MainController.controller('MainController', function($rootScope, $scope, $ionicM
     *   Función que se ejecuta cuando es tocada una inapp-notification
     */
     $rootScope.goToNotification = function (userId, agentId) {
-        console.log('see chat: ' +  userId);
+        console.log('goToNotification')
+        console.log('userId: ' +  userId);
+        console.log('agentId: ' +  agentId);
+        // loading...
+        $ionicLoading.show(CONSTANTS.LOADING.OPTIONS)
         // se esconde el div que muestra la notificación
         $rootScope.notification.style.display = "none"; // block | none
-        $state.go('chats-detail', {
-            userId: userId,
-            agentId: agentId
-        })
+
+        $timeout(function () {
+            $state.go('chats-detail', {
+                userId: userId,
+                agentId: agentId
+            })
+        }, 300)
     }
 
     /**
@@ -492,10 +505,11 @@ MainController.controller('MainController', function($rootScope, $scope, $ionicM
                 console.log('Error chacking new messages')
             }
 
+            // hide loading...
+            $ionicLoading.hide()
+            
             // si el usuario esta haciendo refresh, se emite el evento de que ya se termino el proceso
             if (isRefresh) {
-                // hide loading...
-                $ionicLoading.hide()
                 console.log('OK REFERSH');
                 // Stop the ion-refresher from spinning
                 $scope.$broadcast('scroll.refreshComplete')

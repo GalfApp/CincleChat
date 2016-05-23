@@ -69,7 +69,7 @@ MainController.controller('ChatController', function($scope, $stateParams, $q, C
                     console.log(response.data)
 
                     // se pide el chat actual
-                    //getChat($stateParams.userId)
+                    getChat($stateParams.userId)
 
                     // se inicia la tarea que concurrentemente esta consultando en el server por nuevos mensajes
                     startChatInterval()
@@ -188,9 +188,14 @@ MainController.controller('ChatController', function($scope, $stateParams, $q, C
                 } else {
                     console.log('Error')
                 }
+
+                // loading hide...
+                $ionicLoading.hide()
             }, function(error) {
                 console.log('Error getting chat. Error: ');
                 console.log(error);
+                // loading hide...
+                $ionicLoading.hide()
             })
     }
 
@@ -267,10 +272,10 @@ MainController.controller('ChatController', function($scope, $stateParams, $q, C
         console.log('Params:');
         console.log($stateParams)
 
-        window.localStorage.setItem('currentUserIdChat', $stateParams.userId)
-
         // loading...
         $ionicLoading.show(CONSTANTS.LOADING.OPTIONS)
+
+        window.localStorage.setItem('currentUserIdChat', $stateParams.userId)
 
         // se consulta la información del usuario a chatear, si existe el usuario se empieza un chat o se consulta el chat ya existente
         var getUserData = $scope.getUserData($stateParams.userId);
@@ -279,7 +284,7 @@ MainController.controller('ChatController', function($scope, $stateParams, $q, C
         // cuando se obtenga la información del usuario se empieza el chat
         getUserData.then(function(response) {
             // si no hay agent id, es porque no se ha creado la conversacion
-            if (!$stateParams.agentId) {
+            if (!$stateParams.agentId || $stateParams.agentId == 0) {
                 console.log('$scope.userToChat.sexo: ', $scope.userToChat.sexo);
                 // el codigo del agente depende del sexo del usuario
                 $scope.codeAgent = ($scope.userToChat.sexo.toLowerCase() == 'm') ? CONSTANTS.USERS.NICOLE.CODE : CONSTANTS.USERS.DAVID.CODE
@@ -297,12 +302,11 @@ MainController.controller('ChatController', function($scope, $stateParams, $q, C
             }
         }, function(reason) {
             console.log('Error to get the user')
-            $scope.historyBack()
+            $scope.goToChatList()
         })
 
     }
-
-
+    
     /**
      *   Función responsable de enviar un mensaje
      */

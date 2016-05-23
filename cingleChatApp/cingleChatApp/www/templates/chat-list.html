@@ -2,14 +2,15 @@
     pulling-text="Pull to refresh chats..."
     on-refresh="checkNewChats(true)">
 </ion-refresher>
-
+<!-- href="#/chats/{{getCingleUserId(chat.user_p, chat.user_s)}}/{{getAgentUserId(chat.user_p, chat.user_s)}}" -->
 <ion-list ng-if="chats.length">
     <span ng-repeat="chat in chats">
         <ion-item class="item-remove-animate item-avatar" 
                 ng-if="!(isCingleAgent(chat.user_p) && isCingleAgent(chat.user_s))"
                 ng-class="{'no-viewed': chat.visto == '0'}" 
                 nav-direction="forward" 
-                href="#/chats/{{getCingleUserId(chat.user_p, chat.user_s)}}/{{getAgentUserId(chat.user_p, chat.user_s)}}"
+                
+                ng-click="goToNotification(getCingleUserId(chat.user_p, chat.user_s), getAgentUserId(chat.user_p, chat.user_s))"
                 type="item-text-wrap">
             <img ng-src="{{chat.foto}}">
 

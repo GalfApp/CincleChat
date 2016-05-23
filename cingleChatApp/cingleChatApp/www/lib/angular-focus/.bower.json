@@ -1,0 +1,25 @@
+{
+  "name": "angular-focus",
+  "description": "A few angular directives for dealing with input focus and blur",
+  "version": "0.1.0",
+  "homepage": "http://github.com/jgallen23/angular-focus",
+  "license": "MIT",
+  "copyright": "Greg Allen",
+  "main": "dist/angular-focus.js",
+  "dependencies": {
+    "angular": "1.*"
+  },
+  "devDependencies": {
+    "assert": "*"
+  },
+  "_release": "0.1.0",
+  "_resolution": {
+    "type": "version",
+    "tag": "0.1.0",
+    "commit": "74dbdf439055a8dc6a5ceab444a1d807a16be127"
+  },
+  "_source": "https://github.com/jgallen23/angular-focus.git",
+  "_target": "^0.1.0",
+  "_originalSource": "angular-focus",
+  "_direct": true
+}

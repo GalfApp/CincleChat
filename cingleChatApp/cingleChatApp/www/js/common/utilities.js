@@ -45,7 +45,6 @@ utilities.factory('utilities', [
                 return response
             }
 
-
         }
 
         return utilities
