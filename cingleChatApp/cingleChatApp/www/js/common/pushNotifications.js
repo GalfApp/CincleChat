@@ -53,19 +53,21 @@ pushNotifications.service('pushNotifications', ['$rootScope', 'CONSTANTS', '$cor
             }
 
             $rootScope.notification.style.display = "block"; // block | none
+            console.log('options notification')
+            console.log(options)
 
             var moveObj = move($rootScope.notification)
                 .ease('in-out')
-                .y(options.translateY || optionsDefault.translateY)
-                .delay(options.delayIn || optionsDefault.delayIn)
-                .duration(options.durationIn || optionsDefault.durationIn)
+                .y(options.translateY)
+                .delay(options.delayIn)
+                .duration(options.durationIn)
                 .end(function () {
                     console.log('show notification done');
                     move($rootScope.notification)
                         .ease('in-out')
-                        .y((options.translateY || optionsDefault.translateY) * -1)
-                        .delay(options.delayOut || optionsDefault.delayOut)
-                        .duration(options.durationOut || optionsDefault.durationOut)
+                        .y(options.translateY * -1)
+                        .delay(options.delayOut)
+                        .duration(options.durationOut)
                         .end(function () {
                             console.log('hide notification done');
                         });
