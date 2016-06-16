@@ -52,7 +52,7 @@ MainController.controller('MainController', function($rootScope, $scope, $ionicM
     // Función global para realizar un back en cualquier pantalla
     $scope.goToChatList = function() {
         $ionicLoading.show(CONSTANTS.LOADING.OPTIONS)
-
+        $scope.checkNewChats(false)
         $timeout(function () {
             window.localStorage.setItem('currentUserIdChat', 0)
             $state.go('chats').then(function () {
@@ -83,16 +83,24 @@ MainController.controller('MainController', function($rootScope, $scope, $ionicM
     /**
     *   Función que se ejecuta cuando es tocada una inapp-notification
     */
-    $rootScope.goToNotification = function (userId, agentId) {
+    $rootScope.goToNotification = function (userId, agentId, index) {
         console.log('goToNotification')
         console.log('userId: ' +  userId);
         console.log('agentId: ' +  agentId);
+        console.log('index: ' +  index);
+
         // loading...
         $ionicLoading.show(CONSTANTS.LOADING.OPTIONS)
         // se esconde el div que muestra la notificación
         $rootScope.notification.style.display = "none"; // block | none
 
+        // se marca como leido
+        if (!(index == null || index == undefined)) {
+            $scope.chats[index].visto = '1'
+        }
+        
         $timeout(function () {
+
             $state.go('chats-detail', {
                 userId: userId,
                 agentId: agentId
